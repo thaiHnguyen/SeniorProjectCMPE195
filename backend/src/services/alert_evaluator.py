@@ -80,9 +80,10 @@ class AlertEvaluator:
         if RANK[raw] < RANK[current]:
             if current == AlertState.DANGER and not (lo + pad <= value <= hi - pad):
                 return AlertState.DANGER
-        if RANK[raw] < RANK[AlertState.WARNING]:
-            if not (lo + buf + pad <= value <= hi - buf - pad):
-                return AlertState.WARNING
+            
+            if RANK[raw] < RANK[AlertState.WARNING]:
+                if not (lo + buf + pad <= value <= hi - buf - pad):
+                    return AlertState.WARNING
         return raw
 
     def evaluate(self, sensor_type, metric, value, config) -> Optional[Transition]:
@@ -98,9 +99,8 @@ class AlertEvaluator:
         observed = self.classify(value, lo, hi, ms.state)
 
         if observed == ms.state:
-            ms.pending_count += 1
-        else:
             ms.pending, ms.pending_count = None, 0
+            return None
 
         #debounce: one noisy reading should not move us
         if observed == ms.pending:
@@ -120,7 +120,7 @@ class AlertEvaluator:
             profile changed by user
         """
         if sensor_type is None:
-            self._state.clear()
+            self._states.clear()
         else:
-            self._state.pop((sensor_type, metric), None)
+            self._states.pop((sensor_type, metric), None)
 

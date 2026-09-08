@@ -57,6 +57,7 @@ class AlertEvaluator:
         self.warning_buffer_pct = warning_buffer_pct
         self.hysteresis_pct = hysteresis_pct
         self.confirm_readings = confirm_readings
+        self._states: Dict[Tuple[str, str], MetricState] = {}
 
     def _raw(self, value, lo, hi, buf) -> AlertState:
         """Severity ignoring history (same behavior as SensorCard.jsx)"""
@@ -81,7 +82,8 @@ class AlertEvaluator:
                 return AlertState.DANGER
         if RANK[raw] < RANK[AlertState.WARNING]:
             if not (lo + buf + pad <= value <= hi - buf - pad):
-                return  AlertState.WARNING
+                return AlertState.WARNING
+        return raw
 
     def evaluate(self, sensor_type, metric, value, config) -> Optional[Transition]:
         """Return a Transition only on a confirmed state change"""

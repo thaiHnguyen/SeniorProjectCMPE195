@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 
 from backend.src.storage import db_manager
+from backend.src.services.data_collector import data_collector
 from backend.src.storage.models import (
     ThresholdConfiguration,
     ThresholdConfigurationCreate,
@@ -151,6 +152,9 @@ async def update_configuration(config_id: int, config: ThresholdConfigurationUpd
             raise HTTPException(
                 status_code=500, detail="Failed to update configuration"
             )
+        
+        # Unconditional: cheap, and covers editing the active profile
+        data_collector.invalidate_config()
 
         # Fetch updated configuration
         updated = await db_manager.get_configuration(config_id)
@@ -197,6 +201,9 @@ async def activate_configuration(config_id: int):
                 status_code=500, detail="Failed to activate configuration"
             )
 
+        # New bands: drop cached config and tracked alert state
+        data_collector.invalidate_config()
+        
         return {
             "status": "success",
             "message": f"Configuration '{config['name']}' activated",

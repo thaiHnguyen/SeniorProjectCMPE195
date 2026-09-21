@@ -26,6 +26,14 @@ METRIC_BOUNDS = {
     "ph":           ("ph_min", "ph_max")
 }
 
+# Absolute tolerance OUTSIDE [min, max] that counts as WARNING; beyond is DANGER.
+# Must match TOLERANCE in frontend/src/components/SensorCard.jsx
+TOLERANCE = {
+    "temperature": 2.0,
+    "humidity": 5.0,
+    "ph": 0.3,
+}
+
 @dataclass
 class Transition:
     sensor_type: str
@@ -48,41 +56,36 @@ class MetricState:
     pending_count: int = 0
 
 class AlertEvaluator:
-    def __init__ (
+    def __init__(
         self,
-        warning_buffer_pct: float = 0.10, #same behavior from SensorCard.jsx
-        hysteresis_pct: float = 0.02,
+        tolerance: Dict[str, float] = None,
+        hysteresis_frac: float = 0.2,   # fraction of tolerance needed to recover
         confirm_readings: int = 2,
     ):
-        self.warning_buffer_pct = warning_buffer_pct
-        self.hysteresis_pct = hysteresis_pct
+        self.tolerance = tolerance or TOLERANCE
+        self.hysteresis_frac = hysteresis_frac
         self.confirm_readings = confirm_readings
         self._states: Dict[Tuple[str, str], MetricState] = {}
 
-    def _raw(self, value, lo, hi, buf) -> AlertState:
-        """Severity ignoring history (same behavior as SensorCard.jsx)"""
-        if value < lo or value > hi:
-            return AlertState.DANGER
-        if value <= lo + buf or value >= hi - buf:
+    def _raw(self, value, lo, hi, tol) -> AlertState:
+        """In range = NORMAL, within tolerance outside = WARNING, beyond = DANGER."""
+        if lo <= value <= hi:
+            return AlertState.NORMAL
+        if lo - tol <= value <= hi + tol:
             return AlertState.WARNING
-        return AlertState.NORMAL
+        return AlertState.DANGER
 
-    def classify(self, value, lo, hi, current: AlertState) -> AlertState:
-        band = (hi-lo) or 1.0
-        # Set cap of buffer so i cannot swallow whole range on a narrow band
-        buf = min(band * self.warning_buffer_pct, band * 0.45)
-        pad = self.hysteresis_pct * band
+    def classify(self, value, lo, hi, tol, current: AlertState) -> AlertState:
+        # Cap the pad so a narrow range can still recover to NORMAL
+        pad = min(tol * self.hysteresis_frac, (hi - lo) * 0.25)
+        raw = self._raw(value, lo, hi, tol)
 
-        raw = self._raw(value, lo, hi, buf)
-
-        # Require clearing boundary by "pad" before doing any downgrading
-        #   ,or a value will sit on the line and dont switch between state
+        # Improving? Require clearing each boundary by `pad` before downgrading (NEED TEST)
         if RANK[raw] < RANK[current]:
-            if current == AlertState.DANGER and not (lo + pad <= value <= hi - pad):
+            if current == AlertState.DANGER and not (lo - tol + pad <= value <= hi + tol - pad):
                 return AlertState.DANGER
-            
             if RANK[raw] < RANK[AlertState.WARNING]:
-                if not (lo + buf + pad <= value <= hi - buf - pad):
+                if not (lo + pad <= value <= hi - pad):
                     return AlertState.WARNING
         return raw
 
@@ -96,7 +99,7 @@ class AlertEvaluator:
 
         key = (sensor_type, metric)
         ms = self._states.setdefault(key, MetricState())
-        observed = self.classify(value, lo, hi, ms.state)
+        observed = self.classify(value, lo, hi, self.tolerance[metric], ms.state)
 
         if observed == ms.state:
             ms.pending, ms.pending_count = None, 0

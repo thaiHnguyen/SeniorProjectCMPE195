@@ -9,23 +9,22 @@ import "../styles/sensorCard.css";
  *  status: Normal/Warning/Danger
  */
 
+// Must match TOLERANCE in backend/src/services/alert_evaluator.py
+const TOLERANCE = { temperature: 2.0, humidity: 5.0, ph: 0.3 };
 
-function SensorCard({title, value, unit, min, max}) {
-    let status = "normal";
-    const rangeBuffer = (max - min)*0.1;
+function SensorCard({ title, value, unit, min, max, metric }) {
     const currentValue = Number(value);
     const minVal = Number(min);
     const maxVal = Number(max);
+    const tol = TOLERANCE[metric] ?? 0;
 
-    // Condition for Danger (either < min or > max)
-    if (value < minVal || value > maxVal) {
-        status = "danger";
-    } 
-    // condition for "warning": only close to edge of min or max
-    else if ( value <= minVal + rangeBuffer || value >= maxVal - rangeBuffer) {
+    let status;
+    if (currentValue >= minVal && currentValue <= maxVal) {
+        status = "normal";
+    } else if (currentValue >= minVal - tol && currentValue <= maxVal + tol) {
         status = "warning";
     } else {
-        status = "normal";
+        status = "danger";
     }
 
     return (

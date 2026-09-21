@@ -13,9 +13,10 @@ function Dashboard({ current, thresholds, charts }) {
     return (
         <main className="dashboard">
             {/* Sensor Cards */}
-            <section className="card-grid">
+                        <section className="card-grid">
                 <SensorCard
                     title="Temperature"
+                    metric="temperature"
                     value={current?.temperature ?? 0}
                     unit=" °C"
                     min={thresholds?.temperature?.min ?? 0}
@@ -23,6 +24,7 @@ function Dashboard({ current, thresholds, charts }) {
                 />
                 <SensorCard
                     title="Humidity"
+                    metric="humidity"
                     value={current?.humidity ?? 0}
                     unit=" %"
                     min={thresholds?.humidity?.min ?? 0}
@@ -30,6 +32,7 @@ function Dashboard({ current, thresholds, charts }) {
                 />
                 <SensorCard
                     title="pH"
+                    metric="ph"
                     value={current?.ph ?? 0}
                     unit=""
                     min={thresholds?.ph?.min ?? 0}
@@ -37,25 +40,24 @@ function Dashboard({ current, thresholds, charts }) {
                 />
             </section>
 
-            {/* Historical Charts */}
             <section className="sensor-chart-grid" style={{ marginTop: "40px" }}>
                 <SensorChart
                     title="Temperature Chart"
                     unit="°C"
                     data={charts?.temperature?.data ?? []}
-                    timestamps={charts?.temperature?.timestamps ?? []} 
+                    timestamps={charts?.temperature?.timestamps ?? []}
                 />
                 <SensorChart
                     title="Humidity Chart"
                     unit="%"
                     data={charts?.humidity?.data ?? []}
-                    timestamps={charts?.temperature?.timestamps ?? []} 
+                    timestamps={charts?.humidity?.timestamps ?? []}
                 />
                 <SensorChart
                     title="pH Chart"
                     unit=""
                     data={charts?.ph?.data ?? []}
-                    timestamps={charts?.temperature?.timestamps ?? []} 
+                    timestamps={charts?.ph?.timestamps ?? []}
                 />
             </section>
         </main>

@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAlerts } from "./services/api.js";
+
 import "./styles/App.css";
 
 import Navbar from "./components/Navbar.jsx";
 import TabBar from "./components/TabBar.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Settings from "./pages/Settings.jsx";
+import AlertModal from "./components/AlertModal.jsx";
 
 import useDashboardData from "./hooks/useDashboardData.js";
 
@@ -16,8 +19,41 @@ function App() {
     // "settings"  = show threshold profile management
     const [activeTab, setActiveTab] = useState("dashboard");
 
+    const [dangerAlerts, setDangerAlerts] = useState([]);
+    // Per-session dismissals — intentionally not persisted, so a refresh re-shows
+    const [dismissed, setDismissed] = useState(() => new Set());
+
     // Dark / Light mode
     const [darkMode, setDarkMode] = useState(false);
+    
+    // Poll alongside existing sensor polling
+    useEffect(() => {
+        let cancelled = false;
+
+        const poll = async () => {
+            try {
+                const alerts = await getAlerts({ severity: "critical", limit: 20 });
+                if (!cancelled) setDangerAlerts(alerts);
+            } catch (e) {
+                console.error("Alert poll failed:", e);   // don't break the dashboard
+            }
+        };
+
+        poll();
+        const id = setInterval(poll, 15000);
+        return () => { cancelled = true; clearInterval(id); };
+    }, []);
+
+    const visible = dangerAlerts.filter((a) => !dismissed.has(a.id));
+
+    const handleClose = () => {
+        setDismissed((prev) => {
+            const next = new Set(prev);
+            visible.forEach((a) => next.add(a.id));
+            return next;
+        });
+    };
+    
     // Loading State
     if (loading) {
         return (
@@ -73,7 +109,7 @@ function App() {
                 darkMode={darkMode}
                 onToggleDarkMode={() => setDarkMode(!darkMode)}
             />
-
+            
             {/* Tab Bar - always visible, switches between pages */}
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -89,6 +125,9 @@ function App() {
                     <Settings />
                 </main>
             )}
+
+            {/*Alert Modal - use when threshold is on DANGER */}
+            <AlertModal alerts={visible} onClose={handleClose} />
         </>
     );
 }

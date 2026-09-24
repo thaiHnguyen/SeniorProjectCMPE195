@@ -1,0 +1,27 @@
+.alert-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+.alert-modal {
+    background: #2a2a2a;
+    border: 2px solid #e04040;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 520px; width: 90%;
+    max-height: 70vh; overflow-y: auto;
+}
+.alert-modal-title { color: #ff5555; margin: 0 0 16px; }
+.alert-modal-list { list-style: none; padding: 0; margin: 0 0 20px; }
+.alert-modal-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #444;
+}
+.alert-modal-message { margin: 0 0 4px; color: #eee; }
+.alert-modal-time { font-size: 0.85em; color: #999; }
+.alert-modal-close {
+    width: 100%; padding: 10px;
+    background: #e04040; color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+}

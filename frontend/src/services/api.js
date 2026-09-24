@@ -147,3 +147,11 @@ export async function fetchDashboardBootstrap() {
         ]);
     return { systemStatus, latestReadings, activeConfiguration };
 }
+
+export async function getAlerts({ severity, limit = 20 } = {}) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (severity) params.set("severity", severity);
+    const res = await fetch(`${API_BASE_URL}/api/alerts/?${params}`);
+    if (!res.ok) throw new Error(`Failed to fetch alerts: ${res.status}`);
+    return res.json();
+}

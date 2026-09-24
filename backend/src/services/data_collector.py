@@ -22,6 +22,33 @@ SEVERITY_MAP = {
     AlertState.NORMAL: "info",
 }
 
+# Display units per metric. Temperature carries both scales because the
+# frontend lets users switch between C and F; stored values stay Celsius.
+METRIC_UNITS = {
+    "temperature": "°C",
+    "humidity": "%",
+    "ph": "",
+}
+def _c_to_f(c: float) -> float:
+    """Absolute temp conversion. Not for spanning"""
+    return c * 9 / 5 + 32
+
+def _fmt_value(metric:str, value:float) -> str:
+    """Format a reading for an alert message, both scales for temp"""
+    if metric == "temperature":
+        return f"{value:.1f} °C ({_c_to_f(value):.1f} °F)"
+    return f"{value:.1f}{METRIC_UNITS.get(metric, '')}"
+    
+def _fmt_range(metric: str, lo: float, hi: float) -> str:
+    """Format a threshold range for an alert message."""
+    if metric == "temperature":
+        return (
+            f"{lo:.1f}-{hi:.1f}°C / "
+            f"{_c_to_f(lo):.1f}-{_c_to_f(hi):.1f}°F"
+        )
+    unit = METRIC_UNITS.get(metric, "")
+    return f"{lo:.1f}-{hi:.1f}{unit}"
+
 class DataCollector:
     """
     Background service that periodically reads sensors
@@ -204,10 +231,12 @@ class DataCollector:
         """Persist one transition, and notify if it warrants it."""
         recovered = t.to_state == AlertState.NORMAL
         message = (
-            f"{t.sensor_type} {t.metric} back to normal: {t.value}"
+            f"{t.sensor_type} {t.metric} back to normal: "
+            f"{_fmt_value(t.metric, t.value)}"
             if recovered
             else f"{t.sensor_type} {t.metric} is {t.to_state.value.upper()}: "
-                    f"{t.value} (range {t.threshold_min}-{t.threshold_max})"
+                    f"{_fmt_value(t.metric, t.value)} "
+                    f"(range {_fmt_range(t.metric, t.threshold_min, t.threshold_max)})"
         )
 
         try:
@@ -229,6 +258,7 @@ class DataCollector:
         if t.should_notify:
             # TODO(Phase 4): web push
             logger.warning(f"DANGER: {message}")
+
 
 # Singleton instance
 data_collector = DataCollector()

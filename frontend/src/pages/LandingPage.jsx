@@ -145,17 +145,39 @@ function LandingPage({ onLogin }) {
                             </div>
                         </div>
                     </div>
-                    <div className="landing-team-member">
-                        <div className="team-avatar">
-                            V
-                        </div>
-
-                        <div>
-                            <p>Vy Lo Phuong Tran</p>
-                            <span>@vlotran</span>
-                        </div>
+                <div className="landing-team-member team-member-detailed">
+                    <div className="team-avatar">
+                        V
                     </div>
 
+                    <div className="team-info">
+                        <p className="team-name">
+                            Vy Lo Phuong Tran
+                        </p>
+
+                        <div className="team-links">
+                            <a
+                                href="https://github.com/vlotran"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                GitHub: vlotran
+                            </a>
+
+                            <a href="mailto:vylophuong.tran@sjsu.edu">
+                                Email: vylophuong.tran@sjsu.edu
+                            </a>
+
+                            <a
+                                href="https://www.linkedin.com/in/vylotran"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                LinkedIn: Vy Lo Phuong Tran
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <div className="landing-team-member team-member-detailed">
                     <div className="team-avatar">
                         T
@@ -181,7 +203,7 @@ function LandingPage({ onLogin }) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                LinkedIn: nguyenhoathai.nht@gmail.com
+                                LinkedIn: Thai Nguyen
                             </a>
                         </div>
                     </div>

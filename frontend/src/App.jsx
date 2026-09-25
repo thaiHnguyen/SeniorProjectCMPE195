@@ -8,6 +8,7 @@ import TabBar from "./components/TabBar.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Settings from "./pages/Settings.jsx";
 import AlertModal from "./components/AlertModal.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 
 import useDashboardData from "./hooks/useDashboardData.js";
 
@@ -26,6 +27,9 @@ function App() {
     // Dark / Light mode
     const [darkMode, setDarkMode] = useState(false);
     
+    // Controls Landing Page -> Dashboard
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     // Poll alongside existing sensor polling
     useEffect(() => {
         let cancelled = false;
@@ -54,6 +58,15 @@ function App() {
         });
     };
     
+    // Show Landing Page before entering Dashboard
+    if (!isLoggedIn) {
+        return (
+            <LandingPage
+                onLogin={() => setIsLoggedIn(true)}
+            />
+        );
+    }
+
     // Loading State
     if (loading) {
         return (

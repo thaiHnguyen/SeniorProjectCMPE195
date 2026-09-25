@@ -1,0 +1,943 @@
+/* ================================
+    LANDING PAGE
+================================ */
+
+.landing-page {
+    min-height: 100vh;
+    width: 100%;
+
+    color: #f5f7f5;
+
+    background:
+        radial-gradient(
+            circle at 75% 40%,
+            rgba(91, 227, 155, 0.08),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #062e2a,
+            #082f2b,
+            #041f1d
+        );
+
+    overflow-x: hidden;
+}
+
+
+/* ================================
+    HEADER
+================================ */
+
+.landing-header {
+    width: 100%;
+    max-width: 1400px;
+
+    margin: auto;
+
+    padding: 28px 6%;
+}
+
+.landing-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.landing-logo {
+    width: 50px;
+    height: 50px;
+
+    object-fit: contain;
+}
+
+
+/* ================================
+    HERO
+================================ */
+
+.landing-hero {
+    max-width: 1400px;
+
+    min-height: 570px;
+
+    margin: auto;
+
+    padding: 50px 6% 60px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1.1fr);
+
+    align-items: center;
+
+    gap: 60px;
+}
+
+
+/* ================================
+    LEFT SIDE
+================================ */
+
+.landing-content {
+    position: relative;
+
+    z-index: 2;
+
+    animation: landingSlideLeft 0.8s ease;
+}
+
+.landing-eyebrow {
+    margin: 0 0 22px;
+
+    color: #5be39b;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 3px;
+}
+
+.landing-content h1 {
+    margin: 0;
+
+    color: #f5f7f5;
+
+    font-size: clamp(52px, 6vw, 82px);
+
+    font-weight: 700;
+
+    line-height: 0.98;
+
+    letter-spacing: -4px;
+}
+
+.landing-content h1 span {
+    color: #5be39b;
+}
+
+.landing-description {
+    max-width: 550px;
+
+    margin-top: 28px;
+    margin-bottom: 35px;
+
+    color: #b8c9c3;
+
+    font-size: 18px;
+
+    line-height: 1.7;
+}
+
+
+/* ================================
+    GET STARTED
+================================ */
+
+.get-started-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 16px 28px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #5be39b;
+
+    color: #062e2a;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.get-started-button:hover {
+    background: #38d97f;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 15px 35px
+        rgba(91, 227, 155, 0.25);
+}
+
+.get-started-button span {
+    font-size: 20px;
+
+    transition: 0.3s ease;
+}
+
+.get-started-button:hover span {
+    transform: translateX(5px);
+}
+
+
+/* ================================
+    IMAGE
+================================ */
+
+.landing-image-container {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    animation: landingSlideRight 0.8s ease;
+}
+
+.landing-image-glow {
+    position: absolute;
+
+    width: 80%;
+    height: 70%;
+
+    background:
+        rgba(56, 217, 127, 0.2);
+
+    filter: blur(100px);
+
+    border-radius: 50%;
+}
+
+.landing-image {
+    position: relative;
+
+    z-index: 1;
+
+    width: 100%;
+
+    max-width: 720px;
+
+    aspect-ratio: 16 / 10;
+
+    object-fit: cover;
+
+    border-radius: 30px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    box-shadow:
+        0 35px 90px
+        rgba(0, 0, 0, 0.38);
+
+    animation:
+        gardenFloat
+        5s
+        ease-in-out
+        infinite;
+}
+
+
+/* ================================
+    BOTTOM
+================================ */
+
+.landing-bottom {
+    padding: 20px 20px 55px;
+
+    text-align: center;
+}
+
+.landing-bottom h2 {
+    margin: 0 0 30px;
+
+    color: #dce8e4;
+
+    font-size: 21px;
+
+    font-weight: 500;
+}
+
+.team-heading {
+    margin-bottom: 18px;
+
+    color: #5be39b;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 3px;
+}
+
+
+/* ================================
+    TEAM
+================================ */
+
+.landing-team {
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 16px;
+}
+
+.landing-team-member {
+    min-width: 230px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 18px;
+
+    text-align: left;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    transition: 0.3s ease;
+}
+
+.landing-team-member:hover {
+    transform: translateY(-4px);
+
+    border-color:
+        rgba(91, 227, 155, 0.3);
+}
+
+.team-avatar {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #103f38;
+
+    color: #5be39b;
+
+    font-weight: 700;
+}
+
+.landing-team-member p {
+    margin: 0 0 4px;
+
+    color: white;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.landing-team-member span {
+    color: #8ca9a1;
+
+    font-size: 12px;
+}
+
+
+/* ================================
+    LOGIN OVERLAY
+================================ */
+
+.login-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    padding: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(0, 18, 16, 0.8);
+
+    backdrop-filter: blur(9px);
+
+    animation:
+        loginFade
+        0.25s ease;
+}
+
+
+/* ================================
+    LOGIN BOX
+================================ */
+
+.login-box {
+    position: relative;
+
+    width: 100%;
+
+    max-width: 430px;
+
+    padding: 38px;
+
+    border-radius: 24px;
+
+    border:
+        1px solid
+        rgba(91, 227, 155, 0.18);
+
+    background:
+        linear-gradient(
+            145deg,
+            #0b3f39,
+            #082f2b
+        );
+
+    box-shadow:
+        0 35px 100px
+        rgba(0, 0, 0, 0.5);
+
+    animation:
+        loginPopup
+        0.3s ease;
+}
+
+.login-close {
+    position: absolute;
+
+    top: 16px;
+    right: 20px;
+
+    width: 35px;
+    height: 35px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    color: #b8c9c3;
+
+    font-size: 25px;
+
+    cursor: pointer;
+}
+
+.login-close:hover {
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.1);
+}
+
+.login-logo {
+    display: block;
+
+    width: 62px;
+    height: 62px;
+
+    margin: 0 auto 15px;
+
+    object-fit: contain;
+}
+
+.login-box h2 {
+    margin: 0;
+
+    text-align: center;
+
+    color: white;
+
+    font-size: 28px;
+}
+
+.login-subtitle {
+    margin: 8px 0 30px;
+
+    text-align: center;
+
+    color: #b8c9c3;
+
+    font-size: 14px;
+}
+
+
+/* ================================
+    FORM
+================================ */
+
+.login-box form {
+    display: flex;
+
+    flex-direction: column;
+}
+
+.login-box form > label {
+    margin-bottom: 8px;
+
+    color: #d8e5e0;
+
+    font-size: 14px;
+}
+
+.login-box input[type="email"],
+.login-box input[type="password"],
+.login-box input[type="text"] {
+    width: 100%;
+
+    padding: 14px;
+
+    margin-bottom: 18px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #062e2a;
+
+    color: white;
+}
+
+.login-box input:focus {
+    border-color: #5be39b;
+}
+
+.login-box input::placeholder {
+    color: #78948d;
+}
+
+
+/* ================================
+    PASSWORD
+================================ */
+
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    padding-right: 65px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    right: 12px;
+    top: 14px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #5be39b;
+
+    cursor: pointer;
+}
+
+
+/* ================================
+    OPTIONS
+================================ */
+
+.login-options {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 23px;
+}
+
+.remember-me {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #b8c9c3;
+
+    font-size: 12px;
+}
+
+.remember-me input {
+    accent-color: #5be39b;
+}
+
+.forgot-password {
+    border: none;
+
+    background: transparent;
+
+    color: #5be39b;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+
+/* ================================
+    SIGN IN
+================================ */
+
+.login-submit {
+    width: 100%;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #5be39b;
+
+    color: #062e2a;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.login-submit:hover {
+    background: #38d97f;
+
+    transform: translateY(-2px);
+}
+
+.create-account {
+    margin-top: 24px;
+
+    text-align: center;
+
+    color: #b8c9c3;
+
+    font-size: 13px;
+}
+
+.create-account span {
+    color: #5be39b;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/* ================================
+    ANIMATIONS
+================================ */
+
+@keyframes gardenFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes landingSlideLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes landingSlideRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes loginFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes loginPopup {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(20px)
+            scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* ================================
+    RESPONSIVE
+================================ */
+
+@media (max-width: 950px) {
+
+    .landing-hero {
+        grid-template-columns: 1fr;
+
+        text-align: center;
+    }
+
+    .landing-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .landing-image-container {
+        max-width: 700px;
+
+        margin: auto;
+    }
+
+    .landing-header {
+        display: flex;
+
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .landing-header {
+        padding: 20px;
+    }
+
+    .landing-hero {
+        padding:
+            30px
+            20px
+            50px;
+    }
+
+    .landing-content h1 {
+        font-size: 48px;
+
+        letter-spacing: -2px;
+    }
+
+    .landing-description {
+        font-size: 16px;
+    }
+
+    .landing-image {
+        border-radius: 20px;
+    }
+
+    .landing-team {
+        flex-direction: column;
+
+        align-items: center;
+    }
+
+    .landing-team-member {
+        width: 100%;
+
+        max-width: 320px;
+    }
+
+    .login-box {
+        padding:
+            35px
+            24px
+            30px;
+    }
+}
+
+/* =========================================
+    CREATE ACCOUNT LINK
+========================================= */
+
+.create-account-link {
+    padding: 0;
+    border: none;
+
+    background: transparent;
+
+    color: #5be39b;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: color 0.2s ease;
+}
+
+.create-account-link:hover {
+    color: #38d97f;
+
+    text-decoration: underline;
+}
+
+
+/* =========================================
+    CREATE ACCOUNT BOX
+========================================= */
+
+.create-account-box {
+    max-width: 450px;
+
+    max-height: 92vh;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================
+    TERMS CHECKBOX
+========================================= */
+
+.terms-checkbox {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin-top: 2px;
+    margin-bottom: 22px;
+
+    color: #b8c9c3;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.terms-checkbox input {
+    width: 16px;
+    height: 16px;
+
+    margin: 0;
+
+    accent-color: #5be39b;
+}
+
+
+/* =========================================
+    SCROLLBAR
+========================================= */
+
+.create-account-box::-webkit-scrollbar {
+    width: 5px;
+}
+
+.create-account-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.create-account-box::-webkit-scrollbar-thumb {
+    background: rgba(91, 227, 155, 0.35);
+
+    border-radius: 10px;
+}
+
+/* =========================================
+   TEAM MEMBER DETAILS
+========================================= */
+
+.team-member-detailed {
+    min-width: 300px;
+}
+
+.team-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.team-name {
+    margin: 0;
+
+    color: #f5f7f5;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.team-links {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.team-links a,
+.team-links span {
+    color: #8ca9a1;
+
+    font-size: 11px;
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.team-links a:hover {
+    color: #5be39b;
+}

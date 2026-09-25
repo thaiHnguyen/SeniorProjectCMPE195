@@ -7,7 +7,7 @@ from typing import Optional
 from datetime import datetime
 
 from backend.src.sensors.sensor_factory import SensorFactory
-from backend.src.storage import db_manager
+from backend.src.database import db_manager
 from backend.src.config.settings import settings
 from backend.src.utils.logger import logger
 

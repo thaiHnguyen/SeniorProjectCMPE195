@@ -7,7 +7,7 @@ from datetime import datetime
 
 from backend.src.config.settings import settings 
 from backend.src.sensors.sensor_factory import SensorFactory
-from backend.src.storage import db_manager
+from backend.src.database import db_manager
 from backend.src.services.data_collector import data_collector
 
 router = APIRouter(prefix="/api", tags=["health"])

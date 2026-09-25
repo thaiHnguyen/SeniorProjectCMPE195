@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from backend.src.config.settings import settings
-from backend.src.storage import db_manager
+from backend.src.database import db_manager
 from backend.src.services.data_collector import data_collector
 from backend.src.utils.logger import logger
 

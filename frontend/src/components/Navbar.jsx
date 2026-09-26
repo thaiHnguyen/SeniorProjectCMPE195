@@ -12,7 +12,7 @@ import offlineIcon from "../assets/icons/offline.png";
 import darkModeIcon from "../assets/icons/darkmode.png";
 import lightModeIcon from "../assets/icons/lightmode.png";
 import { useTempUnit } from "../contexts/TempUnitContext.jsx";
-import { CELSIUS, FAHREINHEIT } from "../utils/units.js";
+import { CELSIUS, FAHRENHEIT } from "../utils/units.js";
 import "../styles/typography.css";
 import "../styles/navbar.css";
 
@@ -44,9 +44,9 @@ function Navbar({ deviceName, status, lastUpdated, darkMode, onToggleDarkMode, }
           </button>
           <button
             type="button"
-            className={tempUnit === FAHREINHEIT ? "unit-option active" : "unit-option"}
-            onClick={() => setTempUnit(FAHREINHEIT)}
-            aria-pressed={tempUnit === FAHREINHEIT}
+            className={tempUnit === FAHRENHEIT ? "unit-option active" : "unit-option"}
+            onClick={() => setTempUnit(FAHRENHEIT)}
+            aria-pressed={tempUnit === FAHRENHEIT}
           >
             °F
           </button>

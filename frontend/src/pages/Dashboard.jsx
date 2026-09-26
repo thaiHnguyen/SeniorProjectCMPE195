@@ -8,7 +8,7 @@
 import React from "react";
 import SensorCard from "../components/SensorCard.jsx";
 import SensorChart from "../components/SensorChart.jsx";
-
+import { useTempUnit } from "../contexts/TempUnitContext.jsx";
 
 function Dashboard({ current, thresholds, charts }) {
     const { tempUnit, toggleTempUnit } = useTempUnit();

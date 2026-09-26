@@ -98,7 +98,7 @@
 
     color: #5be39b;
 
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 700;
 
     letter-spacing: 3px;
@@ -199,7 +199,7 @@
 
     justify-content: center;
 
-    animation: landingSlideRight 0.8s ease;
+    animation: landingSlideRight 0.1s ease;
 }
 
 .landing-image-glow {

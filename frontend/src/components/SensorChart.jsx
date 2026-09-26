@@ -28,16 +28,17 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
     const topPadding = 15;
     const bottomPadding = 15;
     const usableHeight = 100 - topPadding - bottomPadding;
-    // FIX: only fallback to 0/1 when there are no data at all.
-    const maxValue = data.length ? Math.max(...data) : 1;
-    const minValue = data.length ? Math.min(...data) : 0;
+
+    // only fallback to 0/1 when there are no data at all.
+    const maxValue = displayData.length ? Math.max(...displayData) : 1;
+    const minValue = displayData.length ? Math.min(...displayData) : 0;
     const range = maxValue - minValue || 1;
 
     // shared value -> y% mapping
     const getY = (value) => topPadding + (1 - (value - minValue) / range) * usableHeight;
 
-    const points = data.map((value, index) => {
-        const x = (index / (data.length - 1 || 1)) * 100;
+    const points = displayData.map((value, index) => {
+        const x = (index / (displayData.length - 1 || 1)) * 100;
         return {x, y: getY(value), value, timestamp: timestamps[index] };
     });
 
@@ -150,7 +151,7 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                         }}
                     >
                         <div className="tooltip-value">
-                            {points[hoveredPoint].value}{unit}
+                            {fmt(points[hoveredPoint].value)}{unit}
                         </div>
                         <div className="tooltip-timestamp">
                             {formatTimestamp(points[hoveredPoint].timestamp)}
@@ -160,8 +161,8 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
             </div>
 
             <div className="sensor-chart-footer">
-                <span>Min: {minValue}{unit}</span>
-                <span>Max: {maxValue}{unit}</span>
+                <span>Min: {fmt(minValue)}{unit}</span>
+                <span>Max: {fmt(maxValue)}{unit}</span>
             </div>
         </div>
     );

@@ -43,25 +43,6 @@
 
 /* Dark / Light mode button */
 .theme-toggle {
-    position: absolute;
-    right: 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background-color: #808080;
-    border: none;
-    color: inherit;
-
-    cursor: pointer;
-    font-size: 14px;
-    padding: 6px 10px;
-    border-radius: 5px;
-}
-
-/* Dark / Light mode button */
-.theme-toggle {
     /* position/right removed - .nav-actions handles placement now */
     display: flex;
     align-items: center;

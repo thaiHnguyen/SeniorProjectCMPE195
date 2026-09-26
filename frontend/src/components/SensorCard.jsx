@@ -1,9 +1,11 @@
 import React from "react";
-import "../styles/sensorCard.css";
+import { useTempUnit } from "../contexts/TempUnitContext.jsx";
+import { formatTemp } from "../utils/units.js";
 
+import "../styles/sensorCard.css";
 /**
  * Sensor card will be use to display: 
- *  temp: C
+ *  temp: C or F
  *  Humidity: %
  *  pH: double
  *  status: Normal/Warning/Danger
@@ -12,7 +14,12 @@ import "../styles/sensorCard.css";
 // Must match TOLERANCE in backend/src/services/alert_evaluator.py
 const TOLERANCE = { temperature: 2.0, humidity: 5.0, ph: 0.3 };
 
+// Suffix for non-temperature metrics; temperature comes from the context
+const UNIT_LABEL = { humidity: " %", ph: "" };
+
 function SensorCard({ title, value, unit, min, max, metric }) {
+    const { tempUnit } = useTempUnit();
+
     const currentValue = Number(value);
     const minVal = Number(min);
     const maxVal = Number(max);
@@ -26,12 +33,16 @@ function SensorCard({ title, value, unit, min, max, metric }) {
     } else {
         status = "danger";
     }
+    // Convert only for display, as the last step
+    const display =
+        metric === "temperature" ? formatTemp(currentValue, tempUnit) 
+                                : `${currentValue}${UNIT_LABEL[metric] ?? ""}`;
 
     return (
         <div className={`sensor-card ${status}`}>
             <h3>{title}</h3>
             <p className="sensor-value">
-                {currentValue} {unit}
+                {display}
             </p>
             <p className="sensor-status">{status.toUpperCase()}</p>
         </div>

@@ -1,7 +1,13 @@
 import React, { useState } from "react"; 
 import "../styles/sensorChart.css";
+import { useTempUnit } from "../contexts/TempUnitContext.jsx";
+import { toDisplayTemp, tempSymbol } from "../utils/units.js";
 
-function SensorChart({title, unit, data = [], timestamps = []}) {
+// Suffix for non-temperature metrics; temperature comes from the context
+const UNIT_LABEL = { humidity: "%", ph: "" };
+
+function SensorChart({title, metric, data = [], timestamps = []}) {
+    const { tempUnit } = useTempUnit();
     const [isExpanded, setIsExpanded] = useState(false);
     const [hoveredPoint, setHoveredPoint] = useState(null);
 
@@ -9,11 +15,19 @@ function SensorChart({title, unit, data = [], timestamps = []}) {
         setIsExpanded((prev) => !prev);
     };
 
-    // For the chart
+    // Convert once, up front. The chart only displays, no threshold logic
+    const displayData =
+        metric === "temperature" ? data.map((c) => toDisplayTemp(c, tempUnit)) : data;
+
+    const unit = metric === "temperature" ? tempSymbol(tempUnit) : UNIT_LABEL[metric] ?? "";
+
+    // Trim float noise from conversion (82.49000000000001)
+    const fmt = (n) => Number(n.toFixed(2));
+
+     // For the chart
     const topPadding = 15;
     const bottomPadding = 15;
     const usableHeight = 100 - topPadding - bottomPadding;
-
     // FIX: only fallback to 0/1 when there are no data at all.
     const maxValue = data.length ? Math.max(...data) : 1;
     const minValue = data.length ? Math.min(...data) : 0;
@@ -27,7 +41,7 @@ function SensorChart({title, unit, data = [], timestamps = []}) {
         return {x, y: getY(value), value, timestamp: timestamps[index] };
     });
 
-    // NEW: evenly spaced tick value across actual data range
+    // evenly spaced tick value across actual data range
     const tickCount = 4; //for 5 gridlines total
     const ticks = Array.from({ length: tickCount + 1 }, (_, i) => {
         const value = minValue + (range * i ) / tickCount;
@@ -66,7 +80,7 @@ function SensorChart({title, unit, data = [], timestamps = []}) {
             </div>
 
             <div className="sensor-chart-body">
-                {/* NEW: axis label column, rendered as HTML (not SVG) so text
+                {/* axis label column, rendered as HTML (not SVG) so text
                     doesn't get stretched by preserveAspectRatio="none" */}
                 <div className="chart-axis-labels">
                     {ticks.map((ticks, i) => (
@@ -76,14 +90,14 @@ function SensorChart({title, unit, data = [], timestamps = []}) {
                     ))}
                 </div>
             
-            {/*New: wrapper so tooltip %-positioning stays relative to just the plot area*/}
+            {/*wrapper so tooltip %-positioning stays relative to just the plot area*/}
             <div className="chart-plot-area">
                 <svg 
                     viewBox="0 0 100 100"
                     preserveAspectRatio="none"
                     className="chart-svg"
                 >
-                    {/*NEW: gridline that will sit ontop */}
+                    {/*gridline that will sit ontop */}
                     {ticks.map((ticks, i) => (
                         <line
                             key = {i}

@@ -1,8 +1,8 @@
 /**
- * Tab switcher to switch between Dashboard and Setting
+ * Tab switcher to switch between Dashboard, Settings and Appearance
  * 
  * Props:
- *  - activeTab: "dashboard" | "settings"
+ *  - activeTab: "dashboard" | "settings" | "appearance"
  *  - onTabChange: function(tabName)
  */
 
@@ -27,10 +27,16 @@ function TabBar({activeTab, onTabChange}) {
             >
                 Settings
             </button>
+
+            {/* Appearance Tab - theme + temperature unit */}
+            <button
+                className={`tab-btn ${activeTab === "appearance" ? "active" : ""}`}
+                onClick={() => onTabChange("appearance")}
+            >
+                Appearance
+            </button>
         </nav>
     );
 }
 
 export default TabBar;
-
-

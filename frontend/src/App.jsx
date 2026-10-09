@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar.jsx";
 import TabBar from "./components/TabBar.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Settings from "./pages/Settings.jsx";
+import Appearance from "./pages/Appearance.jsx";
 import AlertModal from "./components/AlertModal.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 
@@ -18,14 +19,27 @@ function App() {
 
     // "dashboard" = show sensor cards and charts
     // "settings"  = show threshold profile management
+    // "appearance" = show theme + temperature unit buttons
     const [activeTab, setActiveTab] = useState("dashboard");
 
     const [dangerAlerts, setDangerAlerts] = useState([]);
     // Per-session dismissals — intentionally not persisted, so a refresh re-shows
     const [dismissed, setDismissed] = useState(() => new Set());
 
-    // Dark / Light mode
+    // Dark / Light mode (button now lives on the Appearance page;
+    // theme-switching logic to be added later)
     const [darkMode, setDarkMode] = useState(false);
+
+    // Appearance page doesn't need sensor data, so it renders the same
+    // way in the loading, error, and normal states
+    const appearancePage = (
+        <main className="dashboard">
+            <Appearance
+                darkMode={darkMode}
+                onToggleDarkMode={() => setDarkMode(!darkMode)}
+            />
+        </main>
+    );
     
     // Controls Landing Page -> Dashboard
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -74,10 +88,9 @@ function App() {
                 <Navbar 
                     deviceName="Loading..." 
                     status="offline" 
-                    darkMode={darkMode} 
-                    onToggleDarkMode={() => setDarkMode(!darkMode)}
                 />
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+                {activeTab === "appearance" ? appearancePage : (
                 <main className="dashboard">
                     {activeTab === "dashboard" ? (
                         <p>Loading dashboard data...</p>
@@ -85,6 +98,7 @@ function App() {
                         <Settings />
                     )}
                 </main>
+                )}
             </>
         );
     }
@@ -96,10 +110,9 @@ function App() {
                 <Navbar 
                     deviceName="System Error" 
                     status="offline"
-                    darkMode={darkMode}
-                    onToggleDarkMode={() => setDarkMode(!darkMode)}
                 />
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+                {activeTab === "appearance" ? appearancePage : (
                 <main className="dashboard">
                     {activeTab === "dashboard" ? (
                         <p>Error: {error}</p>
@@ -107,6 +120,7 @@ function App() {
                         <Settings />
                     )}
                 </main>
+                )}
             </>
         );
     }
@@ -119,8 +133,6 @@ function App() {
                 deviceName={device?.name || "Smart Hydroponic System"}
                 status={device?.status || "offline"}
                 lastUpdated={device?.lastUpdated}
-                darkMode={darkMode}
-                onToggleDarkMode={() => setDarkMode(!darkMode)}
             />
             
             {/* Tab Bar - always visible, switches between pages */}
@@ -133,6 +145,8 @@ function App() {
                     thresholds={thresholds}
                     charts={charts}
                 />
+            ) : activeTab === "appearance" ? (
+                appearancePage
             ) : (
                 <main className="dashboard">
                     <Settings />

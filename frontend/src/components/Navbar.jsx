@@ -1,6 +1,5 @@
 /**
  * Navigation Bar will display
- * - Top right: Dark/Light mode toggle button
  * - First row: Project Title
  * - Second row:
  *      - Left Side: Device name: <StatusIcon> [Online | Offline]
@@ -29,35 +28,6 @@ function Navbar({ deviceName, status, lastUpdated, darkMode, onToggleDarkMode, }
 
   return (
     <nav className="navbar">
-      {/* Top-right controls */}
-      <div className="nav-actions">
-
-        {/* Temperature unit: segmented C | F */}
-        <div className="unit-toggle" role="group" aria-label="Temperature unit">
-          <button
-            type="button"
-            className={tempUnit === CELSIUS ? "unit-option active" : "unit-option"}
-            onClick={() => setTempUnit(CELSIUS)}
-            aria-pressed={tempUnit === CELSIUS}
-          >
-            °C
-          </button>
-          <button
-            type="button"
-            className={tempUnit === FAHRENHEIT ? "unit-option active" : "unit-option"}
-            onClick={() => setTempUnit(FAHRENHEIT)}
-            aria-pressed={tempUnit === FAHRENHEIT}
-          >
-            °F
-          </button>
-        </div>
-
-        {/* Dark / Light Mode */}
-        <button className="theme-toggle" onClick={onToggleDarkMode}>
-          <img src={darkMode ? lightModeIcon : darkModeIcon} alt="" />
-          <span>{darkMode ? "Light" : "Dark"}</span>
-        </button>
-      </div>
 
       {/* TITLE */}
       <div className="nav-title">Smart Hydroponic Gardening System</div>

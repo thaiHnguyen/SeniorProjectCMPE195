@@ -15,7 +15,7 @@ import "../styles/toast.css";
 
 function Toast({message, type = "sucess"} ) {
     return (
-        <div className="{`toast ${type}}">{message}</div>
+        <div className={`toast ${type}`}>{message}</div>
     );
 }
 

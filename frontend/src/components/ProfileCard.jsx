@@ -13,8 +13,16 @@
 
 import React from "react";
 import "../styles/profileCard.css";
+import { useTempUnit } from "../contexts/TempUnitContext.jsx";
+import { toDisplayTemp, tempSymbol } from "../utils/units.js";
+
+// Stored °C -> chosen unit, max 1 decimal, no trailing zeros (68, 68.5)
+const fmtTemp = (celsius, unit) => Number(toDisplayTemp(Number(celsius), unit).toFixed(1));
 
 function ProfileCard({profile, onEdit, onDuplicate, onUse, onDelete}) {
+    // Profiles are stored in °C; only the display follows the Appearance setting
+    const { tempUnit } = useTempUnit();
+
     return (
         <div className={`profile-card ${profile.is_active ? "active-profile" : ""}`}>
             {/*Top Row: Name + actions */}
@@ -24,7 +32,7 @@ function ProfileCard({profile, onEdit, onDuplicate, onUse, onDelete}) {
                         <span className="profile-name">{profile.name}</span>
 
                         {/* Active badge for in-used profile */}
-                        {profile.is_active && (
+                        {!!profile.is_active && (
                             <span className="active-badge">In Use</span>
                         )}
                     </div>
@@ -73,7 +81,9 @@ function ProfileCard({profile, onEdit, onDuplicate, onUse, onDelete}) {
 
                 <div className="threshold-item temp">
                     <div className="threshold-label">Temperature</div>
-                    <div className="threshold-range">{profile.temp_min}° – {profile.temp_max}°C</div>
+                    <div className="threshold-range">
+                        {fmtTemp(profile.temp_min, tempUnit)}° – {fmtTemp(profile.temp_max, tempUnit)}{tempSymbol(tempUnit)}
+                    </div>
                 </div>
 
                 <div className="threshold-item hum">

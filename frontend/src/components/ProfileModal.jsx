@@ -5,6 +5,10 @@
  *  - profile.id exist -> edit mode ("save changes")
  *  - profile.id undefined -> Create mode ("create profile")
  * 
+ * Temperature: the form keeps temp_min/temp_max in °C (what the backend
+ * stores), but the inputs show and accept the unit chosen on the Appearance
+ * page. Typed values are converted back to °C as you type
+ *
  * Prop:
  *  - profile: object with form default
  *  - onSave(formData): called on submit
@@ -13,11 +17,24 @@
 
 import React, {useState} from "react";
 import "../styles/profileModal.css";
+import { useTempUnit } from "../contexts/TempUnitContext.jsx";
+import { toDisplayTemp, toStoredTemp, tempSymbol } from "../utils/units.js";
+
+// °C -> what the input shows in the chosen unit (1 decimal, no trailing zeros)
+const toInputTemp = (celsius, unit) =>
+    celsius === "" || celsius == null ? "" : Number(toDisplayTemp(Number(celsius), unit).toFixed(1));
 
 function ProfileModal({profile, onSave, onClose}) {
     // Local copy of form data, edit dont effect parent until click save
     const [form, setForm] = useState({...profile});
     const isEdit = !!profile.id;
+
+    const { tempUnit } = useTempUnit();
+    // What the two temperature inputs show, in the chosen unit
+    const [tempInput, setTempInput] = useState({
+        temp_min: toInputTemp(profile.temp_min, tempUnit),
+        temp_max: toInputTemp(profile.temp_max, tempUnit),
+    });
 
     // update text field
     const updateField = (key, value) => {
@@ -29,6 +46,16 @@ function ProfileModal({profile, onSave, onClose}) {
         setForm((prev) => ({
             ...prev,
             [key]: value=== "" ? "" : Number(value),
+        }));
+    };
+
+    // Temperature field: show what was typed, store it as °C
+    // (rounded to 2 decimals so 70°F saves as 21.11, not 21.111111...)
+    const updateTemp = (key, value) => {
+        setTempInput((prev) => ({ ...prev, [key]: value }));
+        setForm((prev) => ({
+            ...prev,
+            [key]: value === "" ? "" : Number(toStoredTemp(value, tempUnit).toFixed(2)),
         }));
     };
 
@@ -87,20 +114,20 @@ function ProfileModal({profile, onSave, onClose}) {
                 </div>
 
                 {/*Temp Ranges*/}
-                <h3 className="range-header temp">Temperature (°C)</h3>
+                <h3 className="range-header temp">Temperature ({tempSymbol(tempUnit)})</h3>
                 <div className="form-row">
                     <div className="form-group">
                         <label className="form-label">Min</label>
                         <input className="form-input" type="number" step="0.5"
-                            value={form.temp_min}
-                            onChange={(e) => updateNumber("temp_min", e.target.value)} 
+                            value={tempInput.temp_min}
+                            onChange={(e) => updateTemp("temp_min", e.target.value)} 
                         />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Max</label>
                         <input className="form-input" type="number" step="0.5"
-                            value={form.temp_max}
-                            onChange={(e) => updateNumber("temp_max", e.target.value)} 
+                            value={tempInput.temp_max}
+                            onChange={(e) => updateTemp("temp_max", e.target.value)} 
                         />
                     </div>
                 </div>

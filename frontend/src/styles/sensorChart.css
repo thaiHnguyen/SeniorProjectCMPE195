@@ -95,6 +95,18 @@
     transition: opacity 0.2s ease;
 }
 
+/* Hover marker on the chart line (round regardless of chart stretch) */
+.chart-hover-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);   
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
 .sensor-chart-footer {
     display: flex;
     justify-content: space-between;

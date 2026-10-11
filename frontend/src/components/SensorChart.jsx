@@ -126,7 +126,7 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                             cy={points.y}
                             r="3"
                             fill="currentColor"
-                            opacity={hoveredPoint === index ? 1 : 0}
+                            opacity={0}
                             onMouseEnter={(e) => {
                                 e.stopPropagation();
                                 setHoveredPoint(index);
@@ -139,7 +139,16 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                         />
                     ))}
                 </svg>
-                
+                {/* Hover dot: HTML so it stays a perfect circle at any chart size */}
+                {hoveredPoint !== null && (
+                    <span
+                        className="chart-hover-dot"
+                        style={{
+                            left: `${points[hoveredPoint].x}%`,
+                            top: `${points[hoveredPoint].y}%`
+                        }}
+                    />
+                )}
             </div>
                 {/* Tooltip */}
                 {hoveredPoint !== null && (

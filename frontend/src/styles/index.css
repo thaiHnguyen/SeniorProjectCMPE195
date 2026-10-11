@@ -24,8 +24,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+    /* Removed Vite's default "display: flex; place-items: center".
+    It shrank #root to each page's content width and centered it
+     vertically, so pages changed size when switching tabs. */
   min-width: 320px;
   min-height: 100vh;
 }

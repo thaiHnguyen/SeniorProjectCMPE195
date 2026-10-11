@@ -4,14 +4,6 @@
 .appearance-page {
     padding: 24px 0;
 }
-
-.appearance-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0 0 20px;
-}
-
 /* One row per preference: label on the left, control on the right */
 .appearance-row {
     display: flex;

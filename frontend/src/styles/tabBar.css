@@ -18,9 +18,8 @@
     gap: 8px;
     padding: 10px 20px;
     border: none;
-
+    background: transparent; 
     color: var(--accent-muted);
-    color: #9c4b11;
     font-size: 0.95rem;                     /*Adjust to downloaded font alter*/
     font-weight: 500;
     cursor: pointer;

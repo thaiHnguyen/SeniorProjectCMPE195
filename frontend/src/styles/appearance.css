@@ -89,3 +89,6 @@
     background: var(--accent);
     color: var(--on-accent);
 }
+
+/*apply invert filter to theme toggle icon in darkmode*/
+[data-theme="dark"] .theme-toggle img { filter: invert(1); }

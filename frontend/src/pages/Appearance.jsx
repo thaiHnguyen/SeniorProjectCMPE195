@@ -29,12 +29,12 @@ function Appearance() {
         <div className="appearance-page">
             <h2 className="appearance-title">Appearance</h2>
 
-            {/* Row 1: Dark / Light Mode - button shows the mode you'd switch TO */}
+            {/* Row 1: Dark / Light Mode - button shows current theme */}
             <div className="appearance-row">
                 <span className="appearance-label">Theme</span>
                 <button type="button" className="theme-toggle" onClick={toggleTheme}>
-                    <img src={darkMode ? lightModeIcon : darkModeIcon} alt="" />
-                    <span>{darkMode ? "Light" : "Dark"}</span>
+                    <img src={darkMode ? darkModeIcon : lightModeIcon} alt="" />
+                    <span>{darkMode ? "Dark" : "Light"}</span>
                 </button>
             </div>
 

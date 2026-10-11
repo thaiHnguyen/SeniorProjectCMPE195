@@ -123,7 +123,7 @@
 .threshold-item.ph .threshold-range,
 .threshold-item.temp .threshold-range,
 .threshold-item.hum .threshold-range {
-    color: #67e8f9;
+    color: #ec6504;
 }
 
 @media (max-width: 600px) {

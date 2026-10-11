@@ -22,7 +22,7 @@
     font-size: 0.95rem;
 }
 
-/* ---- Buttons: same look as Settings' "+ New Profile" (.btn-create) ----
+/* Buttons: same look as Settings' "+ New Profile" (.btn-create) 
  * Default: cyan outline + faint cyan fill + cyan text
  * Hover:   solid cyan fill + dark text
  * Clicked: .btn-create has no separate pressed style, so pressing shows
@@ -35,9 +35,9 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: 1px solid #67e8f9;
-    background: rgba(103, 232, 249, 0.1);
-    color: #67e8f9;
+    border: 1px solid #ec6504;
+    background: rgba(249, 178, 103, 0.1);
+    color: #ec6504;
     font-size: 0.82rem;
     font-weight: 600;
     border-radius: 8px;
@@ -46,8 +46,8 @@
 }
 
 .theme-toggle:hover {
-    background: #67e8f9;
-    color: #0a0e17;
+    background: #ec6504;
+    color: #170e0a;
 }
 
 /* Keep the 24px icon in proportion with the smaller text */
@@ -62,7 +62,7 @@
  */
 .unit-toggle {
     display: flex;
-    border: 1px solid #67e8f9;
+    border: 1px solid #ec6504;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -71,8 +71,8 @@
     padding: 8px 16px;
     border: none;
     border-radius: 0;           
-    background: rgba(103, 232, 249, 0.1);
-    color: #67e8f9;
+    background: rgba(249, 178, 103, 0.1);
+    color: #ec6504;
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
@@ -81,12 +81,12 @@
 
 /* Thin divider between °C and °F */
 .unit-option + .unit-option {
-    border-left: 1px solid #67e8f9;
+    border-left: 1px solid #ec6504;
 }
 
 /* Hover and the currently selected unit both use the solid fill */
 .unit-option:hover,
 .unit-option.active {
-    background: #67e8f9;
-    color: #0a0e17;
+    background: #ec6504;
+    color: #170f0a;
 }

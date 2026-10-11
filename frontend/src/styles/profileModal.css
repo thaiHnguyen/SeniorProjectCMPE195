@@ -14,7 +14,7 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-.modal-title { font-size: 1.1rem; font-weight: 600; color: #ffffff; margin: 0 0 20px 0; }
+.modal-title { font-size: 1.1rem; font-weight: 600; color: #ec6504; margin: 0 0 20px 0; }
 .form-group { margin-bottom: 16px; }
 
 .form-label {
@@ -31,7 +31,7 @@
     box-sizing: border-box;
 }
 
-.form-input:focus { border-color: rgba(103, 232, 249, 0.4); }
+.form-input:focus { border-color: rgba(249, 178, 103, 0.4); }
 .form-input::placeholder { color: rgba(255, 255, 255, 0.25); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -41,9 +41,9 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.range-header.ph { color: #67e8f9; border-bottom-color: rgba(103, 232, 249, 0.2); }
-.range-header.temp { color: #1afb1a; border-bottom-color: rgba(26, 251, 26, 0.2); }
-.range-header.hum { color: #ffa200; border-bottom-color: rgba(255, 162, 0, 0.2); }
+.range-header.ph { color: #ec6504; border-bottom-color: rgba(249, 178, 103, 0.4); }
+.range-header.temp { color: #ec6504; border-bottom-color: rgba(249, 178, 103, 0.4); }
+.range-header.hum { color: #ec6504; border-bottom-color: rgba(249, 178, 103, 0.4); }
 
 .modal-footer {
     display: flex; justify-content: flex-end; gap: 8px;
@@ -60,7 +60,7 @@
 .btn-cancel:hover { background: rgba(255, 255, 255, 0.04); color: #ffffff; }
 
 .btn-save {
-    padding: 9px 24px; border: none; background: #67e8f9;
+    padding: 9px 24px; border: none; background: #ec6504;
     color: #0a0e17; font-size: 0.85rem; font-weight: 600;
     border-radius: 8px; cursor: pointer; transition: all 0.15s ease;
 }

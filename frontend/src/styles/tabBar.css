@@ -19,7 +19,7 @@
     padding: 10px 20px;
     border: none;
     background: transparent;
-    color: #397881;
+    color: #9c4b11;
     font-size: 0.95rem;                     /*Adjust to downloaded font alter*/
     font-weight: 500;
     cursor: pointer;
@@ -30,12 +30,12 @@
 
 .tab-btn:hover {
     color: whitesmoke;
-    background: rgba(103, 232, 249, 0.08);;
+    background: rgba(249, 164, 103, 0.08);;
 }
 
 .tab-btn.active {
-    color: #67e8f9;
-    background: rgba(103, 232, 249, 0.08);
+    color: #ec6504;
+    background: rgba(249, 164, 103, 0.08);
 }
 
 .tab-btn::after {
@@ -45,6 +45,6 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: #67e8f9;
+    background: #9c4b11;
     border-radius: 2px 2px 0 0;
 }

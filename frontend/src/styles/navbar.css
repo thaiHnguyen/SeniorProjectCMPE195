@@ -4,7 +4,7 @@
     flex-direction: column;
     gap: 12;
     color: whitesmoke;
-    border-bottom: 1px solid aqua;
+    border-bottom: 1px solid #ec6504;
 
     position: relative;
 }

@@ -121,7 +121,7 @@ function Settings() {
 
     // Loading / Error
     if (loading) {
-        return <div className="settings-page"><p style={{ color: "rgba(255,255,255,0.5)" }}>Loading profiles...</p></div>;
+        return <div className="settings-page"><p style={{ color: "rgba(var(--fg-rgb), 0.5)" }}>Loading profiles...</p></div>;
     }
     if (error) {
         return <div className="settings-page"><p style={{ color: "red" }}>Error: {error}</p></div>;

@@ -3,8 +3,7 @@
     height: 150px;
     padding: 30px;
     border-radius: 16px;
-
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--fg-rgb), 0.05);   
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
@@ -46,12 +45,12 @@
 
 /*STATUS COLOR STYLING*/
 .sensor-card.normal {
-    border: 1px solid #1afb1a; 
+    border: 1px solid var(--ok); 
     box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
 }
 
 .sensor-card.warning {
-    border: 1px solid #ffa200;
+    border: 1px solid var(--warn);
     box-shadow: 0 0 12px rgba(241, 196, 15, 0.3);
 }
 
@@ -63,12 +62,12 @@
 
 .sensor-card.normal .sensor-status {
     background: rgba(46, 204, 113, 0.2);
-    border: 1px solid #1afb1a;
+    border: 1px solid var(--ok);
 }
 
 .sensor-card.warning .sensor-status {
     background: rgba(241, 196, 15, 0.2);
-    border: 1px solid #ffa200;
+    border: 1px solid var(--warn);
 }
 
 .sensor-card.danger .sensor-status {
@@ -78,11 +77,11 @@
 
 /* VALUE COLOR */
 .sensor-card.normal .sensor-value {
-    color: #1afb1a;
+    color: var(--ok);
 }
 
 .sensor-card.warning .sensor-value {
-    color: #ffa200;
+    color: var(--warn);
 }
 
 .sensor-card.danger .sensor-value {

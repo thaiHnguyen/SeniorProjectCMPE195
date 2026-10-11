@@ -16,20 +16,20 @@
 .settings-title { 
     font-size: 1.1rem; 
     font-weight: 600; 
-    color: #ffffff; 
+    color: var(--text); 
     margin: 0; 
 }
 
 .btn-create {
     display: flex; align-items: center; gap: 6px;
-    padding: 8px 16px; border: 1px solid #ec6504;
-    background: rgba(249, 164, 103, 0.08); color: #ec6504;
+    padding: 8px 16px; border: 1px solid var(--accent);
+    background: rgba(var(--accent-rgb), 0.1); color: var(--accent);
     font-size: 0.82rem; font-weight: 600; border-radius: 8px;
     cursor: pointer; transition: all 0.2s ease;
 }
-.btn-create:hover {
-    background: #ec6504; 
-    color: #0a0e17; 
+.btn-create:hover {    
+    background: var(--accent); 
+    color: var(--on-accent); 
 }
 
 .profile-list { 
@@ -40,6 +40,6 @@
 .empty-state { 
     text-align: center; 
     padding: 40px 20px; 
-    color: rgba(255, 255, 255, 0.4); 
+    color: rgba(var(--fg-rgb), 0.4); 
     font-size: 0.9rem; 
 }

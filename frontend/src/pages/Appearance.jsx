@@ -6,33 +6,33 @@
  *  - Dark / Light theme toggle
  *  - Temperature unit (°C | °F)
  *
- * Behavior is unchanged from the Navbar version:
- *  - Theme: darkMode state still lives in App.jsx and is passed in as props
- *    (theme-switching logic to be added later)
- *  - Unit: read/written through TempUnitContext, so SensorCard and
- *    SensorChart update the moment the unit changes
- *
- * Props:
- *  - darkMode: boolean
- *  - onToggleDarkMode: function()
+ * Both settings come from context, so this page takes no props:
+ *  - Theme: ThemeContext sets <html data-theme>, and styles/theme.css
+ *    swaps every color variable (saved in localStorage)
+ *  - Unit: TempUnitContext, so SensorCard and SensorChart update the
+ *    moment the unit changes
  */
 import React from "react";
 import darkModeIcon from "../assets/icons/darkmode.png";
 import lightModeIcon from "../assets/icons/lightmode.png";
 import { useTempUnit } from "../contexts/TempUnitContext.jsx";
+import { useTheme, DARK } from "../contexts/ThemeContext.jsx";
 import { CELSIUS, FAHRENHEIT } from "../utils/units.js";
 import "../styles/appearance.css";
 
-function Appearance({ darkMode, onToggleDarkMode }) {
-    // Unit comes from context rather than props (same as before)
+function Appearance() {
     const { tempUnit, setTempUnit } = useTempUnit();
+    const { theme, toggleTheme } = useTheme();
+    const darkMode = theme === DARK;
 
     return (
         <div className="appearance-page">
-            {/* Row 1: Dark / Light Mode (moved from Navbar) */}
+            <h2 className="appearance-title">Appearance</h2>
+
+            {/* Row 1: Dark / Light Mode - button shows the mode you'd switch TO */}
             <div className="appearance-row">
                 <span className="appearance-label">Theme</span>
-                <button type="button" className="theme-toggle" onClick={onToggleDarkMode}>
+                <button type="button" className="theme-toggle" onClick={toggleTheme}>
                     <img src={darkMode ? lightModeIcon : darkModeIcon} alt="" />
                     <span>{darkMode ? "Light" : "Dark"}</span>
                 </button>

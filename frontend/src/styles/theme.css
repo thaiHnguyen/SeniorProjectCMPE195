@@ -1,0 +1,71 @@
+/**
+ * Theme colors - the ONLY place real color values live.
+ *
+ * Every component stylesheet uses var(--name) instead of hex codes.
+ * Switching theme = ThemeContext sets <html data-theme="light|dark">,
+ * which swaps the values below. No component needs a "light version".
+ *
+ * To add a color: define it in BOTH blocks, then use var(--name).
+ *
+ * --fg-rgb is used for faint overlays, borders and dimmed text:
+ *   rgba(var(--fg-rgb), 0.08) = faint white on dark, faint black on light
+ */
+
+/*  Dark (default)  */
+:root,
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Backgrounds */
+    --bg: #242424;              /* page */
+    --surface: #111827;         /* modals, dialogs */
+    --surface-alt: #2a2a2a;     /* alert modal */
+    --btn-bg: #1a1a1a;          /* default <button> */
+    --divider: #444;
+
+    /* Text */
+    --text: #ffffff;
+    --text-muted: #999;
+    --fg-rgb: 255, 255, 255;    /* overlays / borders / dimmed text */
+
+    /* Accent */
+    --accent: #ec6504;
+    --accent-rgb: 249, 178, 103;   /* faint accent fills: rgba(var(--accent-rgb), 0.1) */
+    --accent-hover: #f9c867;       /* theme button hover */
+    --accent-muted: #9c4b11;       /* inactive tab text */
+    --on-accent: #0a0e17;          /* text on a solid accent fill */
+
+    /* Status (sensor cards, badges, toasts) */
+    --ok: #1afb1a;
+    --warn: #ffa200;
+    --metric-ph: #67e8f9;          /* pH header in the profile modal */
+}
+
+/*  Light theme */
+[data-theme="light"] {
+    color-scheme: light;
+
+    /* Backgrounds: black / gray -> white */
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-alt: #ffffff;
+    --btn-bg: #f2f2f2;
+    --divider: #dddddd;
+
+    /* Text: white -> black */
+    --text: #000000;
+    --text-muted: #666666;
+    --fg-rgb: 0, 0, 0;
+
+    /* Accent: orange -> blue */
+    --accent: #0451EC;
+    --accent-rgb: 4, 81, 236;
+    --accent-hover: #0340bd;
+    --accent-muted: #5b7fd0;
+    --on-accent: #ffffff;          /* dark text is unreadable on blue */
+
+    /* Status: darker shades so they stay readable on white */
+    --ok: #128a12;
+    --warn: #c26f00;
+    --metric-ph: #0891b2;
+}

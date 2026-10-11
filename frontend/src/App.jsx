@@ -13,37 +13,26 @@ import LandingPage from "./pages/LandingPage.jsx";
 
 import useDashboardData from "./hooks/useDashboardData.js";
 
-
 function App() {
     const { device, current, thresholds, charts, loading, error } = useDashboardData();
-
     // "dashboard" = show sensor cards and charts
     // "settings"  = show threshold profile management
     // "appearance" = show theme + temperature unit buttons
     const [activeTab, setActiveTab] = useState("dashboard");
-
     const [dangerAlerts, setDangerAlerts] = useState([]);
-    // Per-session dismissals — intentionally not persisted, so a refresh re-shows
+    // Per-session dismissals, intentionally not persisted, so a refresh re-shows
     const [dismissed, setDismissed] = useState(() => new Set());
-
-    // Dark / Light mode (button now lives on the Appearance page;
-    // theme-switching logic to be added later)
-    const [darkMode, setDarkMode] = useState(false);
 
     // Appearance page doesn't need sensor data, so it renders the same
     // way in the loading, error, and normal states
     const appearancePage = (
         <main className="dashboard">
-            <Appearance
-                darkMode={darkMode}
-                onToggleDarkMode={() => setDarkMode(!darkMode)}
-            />
+            <Appearance />
         </main>
     );
-    
+
     // Controls Landing Page -> Dashboard
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
     // Poll alongside existing sensor polling
     useEffect(() => {
         let cancelled = false;
@@ -102,7 +91,6 @@ function App() {
             </>
         );
     }
-
     // Error State
     if (error) {
         return (
@@ -124,7 +112,6 @@ function App() {
             </>
         );
     }
-
     // Main Render
     return (
         <>
@@ -137,7 +124,6 @@ function App() {
             
             {/* Tab Bar - always visible, switches between pages */}
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-
             {/*Page Content - conditionally rendered based on active tab*/}
             {activeTab === "dashboard" ? (
                 <Dashboard
@@ -152,7 +138,6 @@ function App() {
                     <Settings />
                 </main>
             )}
-
             {/*Alert Modal - use when threshold is on DANGER */}
             <AlertModal alerts={visible} onClose={handleClose} />
         </>

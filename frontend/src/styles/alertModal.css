@@ -1,11 +1,13 @@
 .alert-modal-backdrop {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.6);
-    display: flex; align-items: center; justify-content: center;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
     z-index: 1000;
 }
 .alert-modal {
-    background: #2a2a2a;
+    background: var(--surface-alt);
     border: 2px solid #e04040;
     border-radius: 12px;
     padding: 24px;
@@ -16,10 +18,10 @@
 .alert-modal-list { list-style: none; padding: 0; margin: 0 0 20px; }
 .alert-modal-item {
     padding: 12px 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--divider);
 }
-.alert-modal-message { margin: 0 0 4px; color: #eee; }
-.alert-modal-time { font-size: 0.85em; color: #999; }
+.alert-modal-message { margin: 0 0 4px; color: var(--text); }
+.alert-modal-time { font-size: 0.85em; color: var(--text-muted); }
 .alert-modal-close {
     width: 100%; padding: 10px;
     background: #e04040; color: #fff;

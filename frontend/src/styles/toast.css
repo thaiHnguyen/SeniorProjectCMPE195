@@ -8,8 +8,8 @@
 
 .toast.success { 
     background: rgba(26, 251, 26, 0.15); 
-    border: 1px solid #1afb1a; 
-    color: #1afb1a; 
+    border: 1px solid var(--ok); 
+    color: var(--ok);  
 }
 .toast.error { 
     background: rgba(231, 76, 60, 0.15); 

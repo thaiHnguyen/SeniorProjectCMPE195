@@ -3,9 +3,8 @@
     display: flex;
     flex-direction: column;
     gap: 12;
-    color: whitesmoke;
-    border-bottom: 1px solid #ec6504;
-
+    color: var(--text);
+    border-bottom: 1px solid var(--accent);
     position: relative;
 }
 
@@ -34,7 +33,7 @@
     height: 16px;
 }
 .status-online{
-    color: #1afb1a;
+    color: var(--ok);
 }
 
 .status-offline{

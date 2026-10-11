@@ -12,21 +12,20 @@
     gap: 16px;
     padding: 14px 16px;
     margin-bottom: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--fg-rgb), 0.08);    
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
 }
 
 .appearance-label {
-    color: whitesmoke;
+    color: var(--text);    
     font-size: 0.95rem;
 }
 
 /* Buttons: same look as Settings' "+ New Profile" (.btn-create) 
- * Default: cyan outline + faint cyan fill + cyan text
- * Hover:   solid cyan fill + dark text
- * Clicked: .btn-create has no separate pressed style, so pressing shows
- *          the hover fill; the selected °C/°F option keeps that fill
+ * Default: accent outline + faint accent fill + accent text
+ * Hover:   solid accent fill + contrasting text
+ * (accent = orange in dark, blue in light - see theme.css)
  */
 
 /* Dark / Light mode button - identical to .btn-create */
@@ -35,9 +34,9 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: 1px solid #ec6504;
-    background: rgba(249, 178, 103, 0.1);
-    color: #ec6504;
+    border: 1px solid var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent);
     font-size: 0.82rem;
     font-weight: 600;
     border-radius: 8px;
@@ -46,8 +45,8 @@
 }
 
 .theme-toggle:hover {
-    background: #ec6504;
-    color: #170e0a;
+    background: var(--accent-hover);
+    color: var(--on-accent);
 }
 
 /* Keep the 24px icon in proportion with the smaller text */
@@ -62,7 +61,7 @@
  */
 .unit-toggle {
     display: flex;
-    border: 1px solid #ec6504;
+    border: 1px solid var(--accent);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -71,8 +70,8 @@
     padding: 8px 16px;
     border: none;
     border-radius: 0;           
-    background: rgba(249, 178, 103, 0.1);
-    color: #ec6504;
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent);
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
@@ -81,12 +80,12 @@
 
 /* Thin divider between °C and °F */
 .unit-option + .unit-option {
-    border-left: 1px solid #ec6504;
+    border-left: 1px solid var(--accent);
 }
 
 /* Hover and the currently selected unit both use the solid fill */
 .unit-option:hover,
 .unit-option.active {
-    background: #ec6504;
-    color: #170f0a;
+    background: var(--accent);
+    color: var(--on-accent);
 }

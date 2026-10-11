@@ -1,20 +1,20 @@
 .profile-card{
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--fg-rgb), 0.05);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    border: 1px solid rgba(var(--fg-rgb), 0.08);
     padding: 18px 20px;
     transition: all 0.25s ease;
 }
 
 .profile-card:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(var(--fg-rgb), 0.07);
+    border-color: rgba(var(--fg-rgb), 0.12);
 }
 
 
 .profile-card.active-profile{
-    border-color: #1afb1a;
+    border-color: var(--ok);
     box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
 }
 
@@ -46,14 +46,14 @@
 .active-badge{
     display: inline-flex; align-items: center; gap: 4px;
     padding: 3px 10px; border-radius: 999px;
-    background: rgba(26, 251, 26, 0.15); color: #1afb1a;
+    background: rgba(26, 251, 26, 0.15); color: var(--ok);
     font-size: 0.7rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 
 .profile.desc{
     font-size: 0.82rem; 
-    color: rgba(255, 255, 255, 0.5); 
+    color: rgba(var(--fg-rgb), 0.5); 
     margin-top: 4px;
     /*Add font name later*/
 }
@@ -71,9 +71,9 @@
     align-items: center;
     justify-content: center;
     padding: 6px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--fg-rgb), 0.08);
     background: transparent;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(var(--fg-rgb), 0.5);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -81,9 +81,9 @@
 }
 
 .action-btn:hover { 
-    background: rgba(255, 255, 255, 0.07); 
-    color: #ffffff; 
-    border-color: rgba(255, 255, 255, 0.15); 
+    background: rgba(var(--fg-rgb), 0.07); 
+    color: var(--text); 
+    border-color: rgba(var(--fg-rgb), 0.15); 
 }
 .action-btn.danger:hover { 
     background: rgba(231, 76, 60, 0.15); 
@@ -92,7 +92,7 @@
 }
 .action-btn.apply:hover { 
     background: rgba(26, 251, 26, 0.15); 
-    color: #1afb1a; 
+    color: var(--ok); 
     border-color: rgba(26, 251, 26, 0.3); 
 }
 
@@ -103,14 +103,14 @@
 }
 
 .threshold-item {
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(var(--fg-rgb), 0.025);
+    border: 1px solid rgba(var(--fg-rgb), 0.05);
     border-radius: 8px; padding: 12px 14px; text-align: center;
     margin-bottom: 12px;
 }
 
 .threshold-label { 
-    font-size: 0.72rem; color: rgba(255, 255, 255, 0.4); 
+    font-size: 0.72rem; color: rgba(var(--fg-rgb), 0.4);
     text-transform: uppercase; letter-spacing: 0.8px; 
     font-weight: 600; margin-bottom: 6px; 
     /*Add font name later*/
@@ -123,7 +123,7 @@
 .threshold-item.ph .threshold-range,
 .threshold-item.temp .threshold-range,
 .threshold-item.hum .threshold-range {
-    color: #ec6504;
+    color: var(--accent);
 }
 
 @media (max-width: 600px) {

@@ -144,8 +144,62 @@
     position: relative;
     flex:1;
     height: 100%;
+    cursor: crosshair;
 }
 .chart-gridline {
     stroke: rgba(var(--fg-rgb), 0.1);
     stroke-width: 1;
+}
+
+/* Row: summary panel (expanded only) + chart */
+.sensor-chart-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.sensor-chart-content > .sensor-chart-body {
+    flex: 1;          /* chart takes remaining width */
+    min-width: 0;
+}
+
+/* Expanded-only summary panel */
+.chart-summary {
+    flex-shrink: 0;
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+.summary-avg {
+    font-size: 2.4rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--accent);
+}
+.summary-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+}
+.summary-range {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.summary-minmax {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-top: 6px;
+}
+
+/* Mobile: stack the panel above the chart */
+@media (max-width: 900px) {
+    .sensor-chart-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .chart-summary {
+        width: auto;
+    }
 }

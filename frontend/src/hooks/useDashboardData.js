@@ -2,8 +2,6 @@
  * use this to call api.js then use transformer.js to feed data to UI
  * Flow: api.js -> transformer.js -> react state -> ui
  */
-
-
 import { useEffect, useState } from "react";
 import {
     fetchSystemStatus,
@@ -45,9 +43,11 @@ export default function useDashboardData() {
                     fetchSystemStatus(),
                     fetchLatestReadings(),
                     fetchActiveConfiguration(),
-                    fetchHistoricalData({ sensorType: "bme280" }),
-                    fetchHistoricalData({ sensorType: "bme280" }),
-                    fetchHistoricalData({ sensorType: "ph" }),
+                    // 24h at a 30s read interval = 2,880 rows; 3,000 leaves headroom.
+                    // Chart AND the expanded-view average both use this same data.
+                    fetchHistoricalData({ sensorType: "bme280", hours: 24, limit: 3000 }),
+                    fetchHistoricalData({ sensorType: "bme280", hours: 24, limit: 3000 }),
+                    fetchHistoricalData({ sensorType: "ph",     hours: 24, limit: 3000 }),
                 ]);
 
                 // Transform data

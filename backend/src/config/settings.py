@@ -2,6 +2,7 @@
 Application Settings
 Loads configuration from environment variables
 """
+import socket
 
 from pydantic_settings import BaseSettings
 from typing import List
@@ -25,6 +26,11 @@ class Settings(BaseSettings):
     # Sensors
     use_mock_sensors: bool = False
     sensor_read_interval: int = 30  # seconds
+
+    # Controller identity 
+    # Name shown in the frontend navbar. Override with CONTROLLER_NAME in .env;
+    # otherwise falls back to the Pi's hostname (e.g. "raspberrypi").
+    controller_name: str = socket.gethostname()
 
     # CORS
     allowed_origins: str = "*"

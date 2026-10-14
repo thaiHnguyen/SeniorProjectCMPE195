@@ -5,12 +5,16 @@
 
 export function mapSystemStatusToDevice(systemStatus) {
     return {
-        //TODO: use the active config name since api/status in backend does not seem to return literal device name
-        name: systemStatus?.active_configuration || "Smart Hydroponic System",      
+        // Controller name from /api/status (set via CONTROLLER_NAME or Pi hostname).
+        // Replaces the old workaround that showed the active threshold profile name.
+        name: systemStatus?.controller_name || "Smart Hydroponic System",   
 
         status: systemStatus?.status || "offline",
         lastUpdated: systemStatus?.timestamp || null,
         usingMock: systemStatus?.sensors?.using_mock ?? true,
+
+        // Kept in case you want to show the profile elsewhere (e.g. Dashboard header)
+        activeProfile: systemStatus?.active_configuration || null,
     };
 }
 

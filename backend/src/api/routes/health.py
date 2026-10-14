@@ -50,6 +50,7 @@ async def system_status():
     return {
         "status": "online",
         "timestamp": datetime.now().isoformat(),
+        "controller_name": settings.controller_name,
         "database": {"status": "connected", "path": db_manager.db_path},
         "sensors": {
             "count": len(sensor_status),

@@ -12,6 +12,29 @@ const BOTTOM_PADDING = 15;
 const USABLE_HEIGHT = 100 - TOP_PADDING - BOTTOM_PADDING;
 const TICK_COUNT = 4; // 5 gridlines total
 
+// NEW: x-axis time labels
+const CHART_TIME_ZONE = "America/Los_Angeles";
+const HOUR_MS = 60 * 60 * 1000;
+// Roughly how many time labels to show in each view
+const X_LABEL_TARGET = { collapsed: 4, expanded: 12 };
+// Allowed spacing between labels (hours); smallest one that fits the target wins
+const HOUR_STEPS = [1, 2, 3, 4, 6, 12, 24];
+
+// Backend sends "YYYY-MM-DD HH:MM:SS" in UTC -> epoch ms
+const parseUtc = (timestamp) =>
+    timestamp ? new Date(timestamp.replace(" ", "T") + "Z").getTime() : NaN;
+
+// Hour of day (0-23) in the chart's time zone, used to land labels on 12 AM, 6 AM, etc.
+const hourFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: CHART_TIME_ZONE, hour: "2-digit", hourCycle: "h23",
+});
+const labelHourFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: CHART_TIME_ZONE, hour: "numeric",
+});
+const labelDateFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: CHART_TIME_ZONE, month: "short", day: "numeric",
+});
+
 function SensorChart({title, metric, data = [], timestamps = []}) {
     const { tempUnit } = useTempUnit();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -63,8 +86,38 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
 
         const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
 
+        // NEW: find where the data crosses each whole hour.
+        // LA is offset from UTC by whole hours, so a change in the UTC hour
+        // number is also an hour boundary locally.
+        const hourMarks = [];
+        let prevHour = null;
+        points.forEach((p) => {
+            const ms = parseUtc(p.timestamp);
+            if (Number.isNaN(ms)) return;
+            const hourNum = Math.floor(ms / HOUR_MS);
+            if (prevHour !== null && hourNum !== prevHour) {
+                const boundary = new Date(hourNum * HOUR_MS);
+                const localHour = Number(hourFormatter.format(boundary));
+                hourMarks.push({
+                    x: p.x,
+                    localHour,
+                    // Midnight include  the date; other hours show "6 AM"
+                    label: localHour === 0
+                        ? labelDateFormatter.format(boundary)
+                        : labelHourFormatter.format(boundary),
+                });
+            }
+            prevHour = hourNum;
+        });
+
+        // Hours covered by the data, used to pick label spacing
+        const spanHours = timestamps.length > 1
+            ? (parseUtc(timestamps[timestamps.length - 1]) - parseUtc(timestamps[0])) / HOUR_MS
+            : 0;
+
         return {
             hasData, minValue, maxValue, avgValue, points, ticks, polylinePoints,
+            hourMarks, spanHours,
             // time span the plotted data actually covers (oldest -> newest)
             rangeStart: timestamps[0],
             rangeEnd: timestamps[timestamps.length - 1],
@@ -72,9 +125,17 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
     }, [data, timestamps, metric, tempUnit]);
 
     const { hasData, minValue, maxValue, avgValue, points, ticks, polylinePoints,
-            rangeStart, rangeEnd } = chart;
+            hourMarks, spanHours, rangeStart, rangeEnd } = chart;
 
-    // NEW: one handler replaces invisible <circle> elements.
+    // NEW: pick which hour marks to label. Collapsed = few labels, expanded = more.
+    // Step adapts to the data span, so 2h of data still gets labels, not just 24h.
+    const xTicks = useMemo(() => {
+        const target = isExpanded ? X_LABEL_TARGET.expanded : X_LABEL_TARGET.collapsed;
+        const step = HOUR_STEPS.find((s) => spanHours / s <= target) ?? 24;
+        return hourMarks.filter((m) => m.localHour % step === 0);
+    }, [hourMarks, spanHours, isExpanded]);
+
+    // NEW: one handler replaces ~2,880 invisible <circle> elements.
     // Points are evenly spaced, so the cursor's horizontal position maps
     // directly to the nearest index — exact, and the dot lands under the cursor.
     const handleMouseMove = (e) => {
@@ -105,7 +166,6 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
         });
     };
 
-    // hovering no longer rebuilds the points and line on every move.
     const hovered = hoveredPoint !== null ? points[hoveredPoint] : null;
 
     return (
@@ -127,10 +187,10 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                         <div className="summary-avg">
                             {hasData ? `${fmt(avgValue)}${unit}` : "--"}
                         </div>
-                        <div className="summary-label">Average - Last 24h</div>
+                        <div className="summary-label">Average · Last 24h</div>
                         {hasData && (
                             <div className="summary-range">
-                                {formatTimestamp(rangeStart)} - {formatTimestamp(rangeEnd)}
+                                {formatTimestamp(rangeStart)} – {formatTimestamp(rangeEnd)}
                             </div>
                         )}
                         <div className="summary-minmax">
@@ -177,6 +237,17 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                                 />
                             ))}
 
+                            {/* NEW: faint vertical gridline at each labeled hour */}
+                            {xTicks.map((tick, i) => (
+                                <line
+                                    key={`x-${i}`}
+                                    x1={tick.x} y1="0"
+                                    x2={tick.x} y2="100"
+                                    className="chart-gridline chart-gridline-x"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                            ))}
+
                             {/* Line chart */}
                             <polyline
                                 fill="none"
@@ -188,6 +259,24 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                             {/* REMOVED: one invisible <circle> per point (caused lag
                                 and stretched, overlapping hit areas) */}
                         </svg>
+
+                        {/* NEW: x-axis time labels. Inside the plot area so their
+                            x% lines up exactly with the data points. HTML (not SVG)
+                            so text isn't stretched. Edge labels are aligned inward
+                            so they don't get clipped. */}
+                        <div className="chart-x-labels">
+                            {xTicks.map((tick, i) => (
+                                <span
+                                    key={i}
+                                    className={`x-label ${
+                                        tick.x < 4 ? "edge-left" : tick.x > 96 ? "edge-right" : ""
+                                    } ${tick.localHour === 0 ? "x-label-day" : ""}`}
+                                    style={{ left: `${tick.x}%` }}
+                                >
+                                    {tick.label}
+                                </span>
+                            ))}
+                        </div>
 
                         {/* Hover dot: HTML so it stays a perfect circle at any chart size */}
                         {hovered && (

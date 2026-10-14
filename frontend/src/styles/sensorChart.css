@@ -193,6 +193,42 @@
     margin-top: 6px;
 }
 
+/* Room under the chart for the x-axis time labels */
+.sensor-chart-body {
+    margin-bottom: 22px;
+}
+
+/* X-axis time labels (positioned inside .chart-plot-area) */
+.chart-x-labels {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 20px;
+    pointer-events: none;   /* don't interfere with hover */
+}
+.x-label {
+    position: absolute;
+    top: 6px;
+    transform: translateX(-50%);   /* center label on its hour */
+    font-size: 0.65rem;
+    opacity: 0.55;
+    white-space: nowrap;
+}
+/* Keep labels at the very edges from being clipped */
+.x-label.edge-left  { transform: none; }
+.x-label.edge-right { transform: translateX(-100%); }
+/* Day change (midnight) stands out a little */
+.x-label-day {
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+/* Vertical hour gridlines are fainter than the horizontal ones */
+.chart-gridline-x {
+    stroke: rgba(var(--fg-rgb), 0.05);
+}
+
 /* Mobile: stack the panel above the chart */
 @media (max-width: 900px) {
     .sensor-chart-content {

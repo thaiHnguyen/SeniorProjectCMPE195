@@ -58,7 +58,6 @@ async def get_active_configuration():
         logger.error(f"Error getting active configuration: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/{config_id}", response_model=ThresholdConfiguration)
 async def get_configuration(config_id: int):
     """
@@ -104,7 +103,7 @@ async def create_configuration(config: ThresholdConfigurationCreate):
         Created configuration with ID
     """
     try:
-        config_id = await db_manager.create_configuration(config.dict())
+        config_id = await db_manager.create_configuration(config.model_dump())  # CHANGED: .dict() is deprecated in Pydantic v2
 
         # Fetch the created configuration
         created = await db_manager.get_configuration(config_id)

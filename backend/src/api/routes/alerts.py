@@ -15,13 +15,13 @@ router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 @router.get("/", response_model=List[Alert])
 async def get_alerts(
     unread_only: bool = Query(False, description="Only return unread alerts"),
-    severity: Optional[str] = Query(None, description="info | warning | critical"),
+    severity: Optional[str] = Query(None, description="normal | warning | danger"),
     limit: int = Query(50, ge=1, le=200),
 ):
     """
     Get recent alerts, newest first.
 
-    The frontend polls this with severity=critical to drive the danger modal.
+    The frontend polls this with severity=danger to drive the danger modal.
     """
     try:
         alerts = await db_manager.get_alerts(unread_only=unread_only, limit=limit)

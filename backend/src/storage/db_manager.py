@@ -11,6 +11,19 @@ from backend.src.config.settings import settings
 from backend.src.utils.logger import logger
 
 
+# NEW: columns added after the first release. `CREATE TABLE IF NOT EXISTS` skips
+# tables that already exist, so a DB created before this change (e.g. on the Pi)
+# would never get them. initialize() adds any that are missing.
+# (table, column, column definition)
+ADDED_COLUMNS = [
+    ("sensor_readings", "aqi_score", "INTEGER"),
+    ("threshold_configurations", "pressure_min", "REAL NOT NULL DEFAULT 990"),
+    ("threshold_configurations", "pressure_max", "REAL NOT NULL DEFAULT 1030"),
+    ("threshold_configurations", "aqi_min", "REAL NOT NULL DEFAULT 1"),
+    ("threshold_configurations", "aqi_max", "REAL NOT NULL DEFAULT 2"),
+]
+
+
 class DatabaseManager:
     """Manages SQLite database operations"""
 
@@ -39,13 +52,69 @@ class DatabaseManager:
                     schema_sql = f.read()
 
                 await db.executescript(schema_sql)
+                await self._add_missing_columns(db)  # NEW: upgrade older DBs
+                await self._migrate_alert_severity(db, schema_sql)  # NEW
                 await db.commit()
 
-            logger.success(f"✅ Database initialized: {self.db_path}")
+            logger.success(f" Database initialized: {self.db_path}")
 
         except Exception as e:
-            logger.error(f"❌ Database initialization failed: {e}")
+            logger.error(f" Database initialization failed: {e}")
             raise
+
+    async def _add_missing_columns(self, db):
+        """
+        NEW: add any ADDED_COLUMNS the existing tables don't have yet.
+        Safe to run on every start: columns that already exist are skipped.
+        Existing profile rows get the column DEFAULT (990-1030 hPa, AQ 1-2).
+        """
+        for table, column, definition in ADDED_COLUMNS:
+            cursor = await db.execute(f"PRAGMA table_info({table})")
+            existing = {row[1] for row in await cursor.fetchall()}
+            if column not in existing:
+                await db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+                logger.info(f"Migrated: added {table}.{column}")
+
+    async def _migrate_alert_severity(self, db, schema_sql: str):
+        """
+        NEW: alert severity was renamed info|warning|critical -> normal|warning|danger.
+        SQLite can't change a CHECK constraint in place, so an older alerts table
+        would reject every new 'danger' alert. Rebuild it once, keeping all rows:
+            1. move the old table aside
+            2. re-run the schema to create the new alerts table (+ its index)
+            3. copy rows over, renaming info -> normal and critical -> danger
+            4. drop the old table
+        Skipped when the table already has the new constraint.
+        """
+        cursor = await db.execute(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'alerts'"
+        )
+        row = await cursor.fetchone()
+        if not row or "'danger'" in row[0]:
+            return  # already has the new constraint (or the table doesn't exist)
+
+        await db.execute("ALTER TABLE alerts RENAME TO alerts_old")
+        # The index keeps its name on the renamed table; drop it so the schema
+        # can create it again on the new table
+        await db.execute("DROP INDEX IF EXISTS idx_alerts_unread")
+        await db.executescript(schema_sql)  # every statement is IF NOT EXISTS / OR IGNORE
+        await db.execute(
+            """
+            INSERT INTO alerts
+                (id, alert_type, sensor_type, message, severity, reading_value,
+                threshold_min, threshold_max, is_read, is_resolved, created_at, resolved_at)
+            SELECT
+                id, alert_type, sensor_type, message,
+                CASE severity WHEN 'info' THEN 'normal'
+                                WHEN 'critical' THEN 'danger'
+                                ELSE severity END,
+                reading_value, threshold_min, threshold_max,
+                is_read, is_resolved, created_at, resolved_at
+            FROM alerts_old
+        """
+        )
+        await db.execute("DROP TABLE alerts_old")
+        logger.info("Migrated: alert severity renamed to normal|warning|danger")
 
     # ==================== SENSOR READINGS ====================
 
@@ -68,8 +137,8 @@ class DatabaseManager:
                     """
                     INSERT INTO sensor_readings 
                     (sensor_type, temperature, humidity, pressure, 
-                     gas_resistance, air_quality, ph)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    gas_resistance, air_quality, aqi_score, ph)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         sensor_type,
@@ -78,6 +147,7 @@ class DatabaseManager:
                         data.get("pressure"),
                         data.get("gas_resistance"),
                         data.get("air_quality"),
+                        data.get("aqi_score"),  # NEW: BME680 1-4 score (was computed, never saved)
                         data.get("ph"),
                     ),
                 )
@@ -191,7 +261,7 @@ class DatabaseManager:
             logger.error(f"Error deleting old readings: {e}")
             return 0
 
-    # ==================== THRESHOLD CONFIGURATIONS ====================
+    # THRESHOLD CONFIGURATIONS 
 
     async def get_configurations(self) -> List[Dict]:
         """Get all threshold configurations"""
@@ -271,8 +341,9 @@ class DatabaseManager:
                     """
                     INSERT INTO threshold_configurations 
                     (name, description, ph_min, ph_max, temp_min, temp_max, 
-                        humidity_min, humidity_max)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        humidity_min, humidity_max,
+                        pressure_min, pressure_max, aqi_min, aqi_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         config_data["name"],
@@ -283,6 +354,12 @@ class DatabaseManager:
                         config_data["temp_max"],
                         config_data["humidity_min"],
                         config_data["humidity_max"],
+
+                        # NEW: BME680 thresholds (models.py supplies defaults if omitted)
+                        config_data["pressure_min"],
+                        config_data["pressure_max"],
+                        config_data["aqi_min"],
+                        config_data["aqi_max"],
                     ),
                 )
                 await db.commit()

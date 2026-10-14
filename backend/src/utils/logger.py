@@ -28,6 +28,7 @@ _logger.add(
     retention="7 days",
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function} - {message}",
+    delay=True,   # NEW: open the file on first write, so uvicorn's reload watcher never locks it (Windows)
 )
 
 # File handler - errors only
@@ -37,6 +38,7 @@ _logger.add(
     retention="30 days",
     level="ERROR",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+    delay=True,   # NEW: same reason
 )
 
 # Export configured logger

@@ -23,7 +23,10 @@ class AlertState(str, Enum):
 METRIC_BOUNDS = {
     "temperature":  ("temp_min", "temp_max"),
     "humidity":     ("humidity_min", "humidity_max"),
-    "ph":           ("ph_min", "ph_max")
+    "ph":           ("ph_min", "ph_max"),
+
+    "pressure":     ("pressure_min", "pressure_max"),   # NEW (BME680, hPa)
+    "aqi_score":    ("aqi_min", "aqi_max"),             # NEW (BME680, 1-4)
 }
 
 # Absolute tolerance OUTSIDE [min, max] that counts as WARNING; beyond is DANGER.
@@ -32,6 +35,9 @@ TOLERANCE = {
     "temperature": 2.0,
     "humidity": 5.0,
     "ph": 0.3,
+    
+    "pressure": 10.0,   # NEW: hPa
+    "aqi_score": 1,     # NEW: one step outside the range = WARNING, two = DANGER
 }
 
 @dataclass
@@ -126,4 +132,3 @@ class AlertEvaluator:
             self._states.clear()
         else:
             self._states.pop((sensor_type, metric), None)
-

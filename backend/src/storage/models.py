@@ -3,12 +3,13 @@ Pydantic models for request/response validation
 
 THRESHOLD CONFIGURATIONS:
 These models support flexible configuration strategies:
-  - Plant-centric: name="Lettuce", description="For leafy greens"
-  - System-centric: name="My Indoor Garden", description="Basement setup"
-  - Hybrid: name="Custom Lettuce", description="Based on lettuce template"
+    - Plant-centric: name="Lettuce", description="For leafy greens"
+    - System-centric: name="My Indoor Garden", description="Basement setup"
+    - Hybrid: name="Custom Lettuce", description="Based on lettuce template"
 """
 
-from pydantic import BaseModel, Field, validator
+# CHANGED: Pydantic v2 API (field_validator and ConfigDict replace the deprecated v1 versions)
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -41,6 +42,7 @@ class BME680Reading(SensorReading):
     pressure: float
     gas_resistance: int
     air_quality: str
+    aqi_score: int  # NEW: 1 Good, 2 Moderate, 3 Poor, 4 Unhealthy
 
 
 class PHReading(SensorReading):
@@ -49,7 +51,8 @@ class PHReading(SensorReading):
     sensor_type: str = "ph"
     ph: float
 
-    @validator("ph")
+    @field_validator("ph")
+    @classmethod
     def validate_ph(cls, v):
         if not 0 <= v <= 14:
             raise ValueError("pH must be between 0 and 14")
@@ -105,22 +108,59 @@ class ThresholdConfigurationBase(BaseModel):
         ge=0, le=100, description="Maximum acceptable humidity (%)"
     )
 
-    @validator("ph_max")
-    def validate_ph_range(cls, v, values):
-        if "ph_min" in values and v < values["ph_min"]:
+    # NEW: Air pressure thresholds (hPa, BME680).
+    # Defaults keep older clients (that don't send these yet) working.
+    pressure_min: float = Field(
+        990, ge=300, le=1100, description="Minimum acceptable air pressure (hPa)"
+    )
+    pressure_max: float = Field(
+        1030, ge=300, le=1100, description="Maximum acceptable air pressure (hPa)"
+    )
+
+    # NEW: Air quality score thresholds (BME680; 1 Good ... 4 Unhealthy)
+    aqi_min: float = Field(1, ge=1, le=4, description="Minimum acceptable air quality score")
+    aqi_max: float = Field(2, ge=1, le=4, description="Maximum acceptable air quality score")
+
+    @field_validator("ph_max")
+    @classmethod
+    def validate_ph_range(cls, v, info: ValidationInfo):
+        # info.data holds fields already validated (declared above this one)
+        if "ph_min" in info.data and v < info.data["ph_min"]:
             raise ValueError("ph_max must be >= ph_min")
         return v
 
-    @validator("temp_max")
-    def validate_temp_range(cls, v, values):
-        if "temp_min" in values and v < values["temp_min"]:
+    @field_validator("temp_max")
+    @classmethod
+    def validate_temp_range(cls, v, info: ValidationInfo):
+        # info.data holds fields already validated (declared above this one)
+        if "temp_min" in info.data and v < info.data["temp_min"]:
             raise ValueError("temp_max must be >= temp_min")
         return v
 
-    @validator("humidity_max")
-    def validate_humidity_range(cls, v, values):
-        if "humidity_min" in values and v < values["humidity_min"]:
+    @field_validator("humidity_max")
+    @classmethod
+    def validate_humidity_range(cls, v, info: ValidationInfo):
+        # info.data holds fields already validated (declared above this one)
+        if "humidity_min" in info.data and v < info.data["humidity_min"]:
             raise ValueError("humidity_max must be >= humidity_min")
+        return v
+
+    # NEW
+    @field_validator("pressure_max")
+    @classmethod
+    def validate_pressure_range(cls, v, info: ValidationInfo):
+        # info.data holds fields already validated (declared above this one)
+        if "pressure_min" in info.data and v < info.data["pressure_min"]:
+            raise ValueError("pressure_max must be >= pressure_min")
+        return v
+
+    # NEW
+    @field_validator("aqi_max")
+    @classmethod
+    def validate_aqi_range(cls, v, info: ValidationInfo):
+        # info.data holds fields already validated (declared above this one)
+        if "aqi_min" in info.data and v < info.data["aqi_min"]:
+            raise ValueError("aqi_max must be >= aqi_min")
         return v
 
 
@@ -129,8 +169,8 @@ class ThresholdConfigurationCreate(ThresholdConfigurationBase):
     Create a new threshold configuration
 
     Examples:
-      - Plant-based: {"name": "Tomato", "description": "For tomato plants", ...}
-      - System-based: {"name": "Main Reservoir", "description": "Indoor setup", ...}
+        - Plant-based: {"name": "Tomato", "description": "For tomato plants", ...}
+        - System-based: {"name": "Main Reservoir", "description": "Indoor setup", ...}
     """
 
     pass
@@ -147,6 +187,12 @@ class ThresholdConfigurationUpdate(BaseModel):
     temp_max: Optional[float] = None
     humidity_min: Optional[float] = Field(None, ge=0, le=100)
     humidity_max: Optional[float] = Field(None, ge=0, le=100)
+
+    pressure_min: Optional[float] = Field(None, ge=300, le=1100)  # NEW
+    pressure_max: Optional[float] = Field(None, ge=300, le=1100)  # NEW
+    aqi_min: Optional[float] = Field(None, ge=1, le=4)            # NEW
+    aqi_max: Optional[float] = Field(None, ge=1, le=4)            # NEW
+
     is_active: Optional[bool] = None
 
 
@@ -162,24 +208,20 @@ class ThresholdConfiguration(ThresholdConfigurationBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True) 
 
 
-# ==================== ALERT MODELS ====================
-
-
+# ALERT MODELS 
 class AlertCreate(BaseModel):
     """Create alert"""
-
     alert_type: str
     sensor_type: Optional[str] = None
     message: str
-    severity: str = Field(default="warning", pattern="^(info|warning|critical)$")
+    # CHANGED: same names as AlertEvaluator / SensorCard (was info|warning|critical)
+    severity: str = Field(default="warning", pattern="^(normal|warning|danger)$")
     reading_value: Optional[float] = None
     threshold_min: Optional[float] = None
     threshold_max: Optional[float] = None
-
 
 class Alert(AlertCreate):
     """Alert from database"""
@@ -190,16 +232,11 @@ class Alert(AlertCreate):
     created_at: datetime
     resolved_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
-
-# ==================== RESPONSE MODELS ====================
-
-
+#  RESPONSE MODELS 
 class SensorReadingsResponse(BaseModel):
     """Response with sensor readings"""
-
     status: str = "success"
     timestamp: datetime = Field(default_factory=datetime.now)
     data: dict
@@ -207,14 +244,11 @@ class SensorReadingsResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     """Generic message response"""
-
     status: str
     message: str
 
-
 class HistoricalDataResponse(BaseModel):
     """Response with historical data"""
-
     status: str = "success"
     count: int
     data: List[dict]

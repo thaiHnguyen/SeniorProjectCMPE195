@@ -15,11 +15,12 @@ from backend.src.utils.logger import logger
 from backend.src.services.alert_evaluator import AlertEvaluator, AlertState, METRIC_BOUNDS
 
 
-# Evaluator severity -> DB severity (*models.py pattern is info|warning|critical)
+# Evaluator state -> DB severity. CHANGED: the DB now uses the same names as the
+# evaluator and the dashboard (normal|warning|danger), so this is a 1:1 mapping.
 SEVERITY_MAP = {
     AlertState.WARNING: "warning",
-    AlertState.DANGER: "critical",
-    AlertState.NORMAL: "info",
+    AlertState.DANGER: "danger",
+    AlertState.NORMAL: "normal",
 }
 
 # Display units per metric. Temperature carries both scales because the
@@ -28,7 +29,17 @@ METRIC_UNITS = {
     "temperature": "°C",
     "humidity": "%",
     "ph": "",
+    "pressure": " hPa",   # NEW
+    "aqi_score": "",      # NEW
 }
+
+# NEW: metrics that should only be checked on one sensor. The BME280 also reports
+# pressure, so without this both sensors would raise the same pressure alert.
+METRIC_SENSORS = {
+    "pressure": {"bme680"},
+    "aqi_score": {"bme680"},
+}
+
 def _c_to_f(c: float) -> float:
     """Absolute temp conversion. Not for spanning"""
     return c * 9 / 5 + 32
@@ -37,6 +48,9 @@ def _fmt_value(metric:str, value:float) -> str:
     """Format a reading for an alert message, both scales for temp"""
     if metric == "temperature":
         return f"{value:.1f} °C ({_c_to_f(value):.1f} °F)"
+    
+    if metric == "aqi_score":
+        return f"{value:.0f}"   # NEW: whole-number score (1-4), not "3.0"
     return f"{value:.1f}{METRIC_UNITS.get(metric, '')}"
     
 def _fmt_range(metric: str, lo: float, hi: float) -> str:
@@ -220,6 +234,10 @@ class DataCollector:
             for metric in METRIC_BOUNDS:
                 if metric not in data:
                     continue
+                # NEW: skip metrics this sensor isn't the source of
+                allowed = METRIC_SENSORS.get(metric)
+                if allowed and sensor_type not in allowed:
+                    continue
 
                 transition = self.evaluator.evaluate(
                     sensor_type, metric, data[metric], config
@@ -258,7 +276,6 @@ class DataCollector:
         if t.should_notify:
             # TODO(Phase 4): web push
             logger.warning(f"DANGER: {message}")
-
 
 # Singleton instance
 data_collector = DataCollector()

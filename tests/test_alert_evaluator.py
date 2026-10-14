@@ -18,13 +18,13 @@ CONFIG = SimpleNamespace(
     temp_min=20.0, temp_max=30.0,
     humidity_min=40.0, humidity_max=80.0,
     ph_min=5.5, ph_max=6.5,
+    pressure_min=990.0, pressure_max=1030.0,   # NEW: tolerance 10 hPa
+    aqi_min=1, aqi_max=2,                      # NEW: tolerance 1 step
 )
-
 
 @pytest.fixture
 def ev():
     return AlertEvaluator()
-
 
 def feed(ev, value, n=1, sensor="bme280", metric="temperature"):
     """Feed a value n times, returning the last transition (or None)."""
@@ -59,11 +59,9 @@ def test_real_readings_from_dashboard(ev):
     assert ev.classify(7.0, 6.0, 7.0, 0.3, AlertState.NORMAL) == AlertState.NORMAL
 
 
-# ---------- transition-only alerting ----------
-
+#  transition-only alerting 
 def test_stable_normal_produces_no_alerts(ev):
     assert feed(ev, 25.0, n=5) is None
-
 
 def test_entering_warning_fires_once_then_goes_quiet(ev):
     assert feed(ev, 31.0) is None          # 1st reading — not yet confirmed
@@ -87,15 +85,12 @@ def test_stuck_in_danger_does_not_spam(ev):
     assert feed(ev, 33.0, n=20) is None     # would be 20 pushes without this
 
 
-# ---------- debounce ----------
-
+# debounce
 def test_single_spike_is_ignored(ev):
     assert feed(ev, 33.0) is None           # one bad reading
     assert feed(ev, 25.0, n=2) is None      # back to normal, never alerted
 
-
-# ---------- hysteresis ----------
-
+#  hysteresis
 def test_value_hovering_at_boundary_does_not_flap(ev):
     feed(ev, 31.0, n=2)                     # WARNING
     # 29.8 is in range, but within the 0.4 pad of max (needs ≤ 29.6)
@@ -110,31 +105,26 @@ def test_recovery_from_danger_passes_through_warning(ev):
     assert t.from_state == AlertState.DANGER
     assert t.to_state == AlertState.WARNING
 
-
-# ---------- per-sensor independence ----------
-
+# per-sensor independence
 def test_two_sensors_track_the_same_metric_separately(ev):
     a = feed(ev, 33.0, n=2, sensor="bme280")
     assert a.to_state == AlertState.DANGER
-    # bme680 has seen nothing out of range — must still be NORMAL
+    # bme680 has seen nothing out of range, must still be NORMAL
     assert feed(ev, 25.0, n=2, sensor="bme680") is None
     b = feed(ev, 33.0, n=2, sensor="bme680")
     assert b.sensor_type == "bme680"
 
-
-# ---------- profile switching ----------
-
+# profile switching
 def test_reset_clears_state_on_profile_change(ev):
     feed(ev, 33.0, n=2)                     # DANGER under this profile
     ev.reset()
     assert feed(ev, 25.0, n=3) is None      # fresh start, nothing to report
 
 
-# ---------- guards ----------
-
+# guards
 def test_unknown_metric_is_ignored(ev):
-    assert ev.evaluate("bme280", "pressure", 1013.0, CONFIG) is None
-
+    # CHANGED: "pressure" is now a tracked metric; gas_resistance is not
+    assert ev.evaluate("bme680", "gas_resistance", 120000, CONFIG) is None
 
 def test_ph_uses_its_own_tolerance(ev):
     assert feed(ev, 6.0, n=2, sensor="ph", metric="ph") is None
@@ -142,3 +132,22 @@ def test_ph_uses_its_own_tolerance(ev):
     assert w.to_state == AlertState.WARNING
     d = feed(ev, 6.9, n=2, sensor="ph", metric="ph")     # beyond 6.8
     assert d.to_state == AlertState.DANGER
+
+# NEW: BME680 pressure + air quality score
+def test_pressure_uses_its_own_tolerance(ev):
+    assert feed(ev, 1013.0, n=2, sensor="bme680", metric="pressure") is None
+    w = feed(ev, 1035.0, n=2, sensor="bme680", metric="pressure")  # within 10 above max
+    assert w.to_state == AlertState.WARNING
+    d = feed(ev, 1045.0, n=2, sensor="bme680", metric="pressure")  # beyond 1040
+    assert d.to_state == AlertState.DANGER
+
+
+@pytest.mark.parametrize("score,expected", [
+    (1, None),                    # Good, in range
+    (2, None),                    # Moderate, in range
+    (3, AlertState.WARNING),      # Poor, one step over
+    (4, AlertState.DANGER),       # Unhealthy, two steps over
+])
+def test_aqi_score_bands(ev, score, expected):
+    t = feed(ev, score, n=2, sensor="bme680", metric="aqi_score")
+    assert (t.to_state if t else None) == expected

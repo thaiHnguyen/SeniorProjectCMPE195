@@ -30,6 +30,8 @@ const MOCK_PROFILES = [
         ph_min: 5.5, ph_max: 6.5,
         temp_min: 15, temp_max: 25,
         humidity_min: 50, humidity_max: 70,
+        pressure_min: 990, pressure_max: 1030,   
+        aqi_min: 1, aqi_max: 2,                  
         is_active: true,
     },
     {
@@ -39,6 +41,8 @@ const MOCK_PROFILES = [
         ph_min: 5.8, ph_max: 6.8,
         temp_min: 20, temp_max: 30,
         humidity_min: 60, humidity_max: 80,
+        pressure_min: 995, pressure_max: 1025,   
+        aqi_min: 1, aqi_max: 2,                  
         is_active: false,
     },
     {
@@ -48,6 +52,8 @@ const MOCK_PROFILES = [
         ph_min: 5.5, ph_max: 6.5,
         temp_min: 18, temp_max: 28,
         humidity_min: 40, humidity_max: 60,
+        pressure_min: 990, pressure_max: 1030,   
+        aqi_min: 1, aqi_max: 1,                 
         is_active: false,
     },
 ];
@@ -57,6 +63,8 @@ const MOCK_CURRENT = {
     temperature: 30,
     humidity: 49.9,
     ph: 6.9,
+    pressure: 1013.25,   
+    aqi_score: 3,       
 };
 
 /** Mock chart history */
@@ -64,6 +72,8 @@ const MOCK_CHARTS = {
     temperature: { data: [21, 24, 25, 26, 28, 27, 29] },
     humidity:    { data: [33, 55, 58, 60, 57, 62] },
     ph:          { data: [4.0, 6.1, 6.3, 6.5, 6.4] },
+    pressure:    { data: [1011.2, 1012.0, 1013.4, 1012.8, 1014.1, 1013.25] },   
+    aqi_score:   { data: [1, 1, 2, 2, 3, 2, 3] },                              
 };
 
 function AppDemo() {
@@ -94,6 +104,15 @@ function AppDemo() {
             min: activeProfile?.ph_min ?? 5.5,
             max: activeProfile?.ph_max ?? 7.0,
         },
+        // NEW
+        pressure: {
+            min: activeProfile?.pressure_min ?? 990,
+            max: activeProfile?.pressure_max ?? 1030,
+        },
+        aqi_score: {
+            min: activeProfile?.aqi_min ?? 1,
+            max: activeProfile?.aqi_max ?? 2,
+        },
     };
 
     // Toast helper
@@ -110,6 +129,8 @@ function AppDemo() {
             ph_min: 5.5, ph_max: 6.5,
             temp_min: 18, temp_max: 28,
             humidity_min: 50, humidity_max: 70,
+            pressure_min: 990, pressure_max: 1030,   
+            aqi_min: 1, aqi_max: 2,                  
         });
         setModalOpen(true);
     };

@@ -39,6 +39,8 @@
     --ok: #1afb1a;
     --warn: #ffa200;
     --metric-ph: #67e8f9;          /* pH header in the profile modal */
+    --metric-pressure: #a78bfa;    /* NEW: Air Pressure header in the profile modal */
+    --metric-aqi: #f472b6;         /* NEW: Air Quality header in the profile modal */
 }
 
 /*  Light theme */
@@ -68,4 +70,6 @@
     --ok: #128a12;
     --warn: #c26f00;
     --metric-ph: #0891b2;
+    --metric-pressure: #7c3aed;    
+    --metric-aqi: #db2777;         
 }

@@ -44,6 +44,9 @@
 .range-header.ph { color: var(--metric-ph); border-bottom-color: rgba(103, 232, 249, 0.2); }
 .range-header.temp { color: var(--ok); border-bottom-color: rgba(26, 251, 26, 0.2); }
 .range-header.hum { color: var(--warn); border-bottom-color: rgba(255, 162, 0, 0.2); }
+/* NEW: BME680 metrics, same pattern as above */
+.range-header.pressure { color: var(--metric-pressure); border-bottom-color: rgba(167, 139, 250, 0.2); }
+.range-header.aqi { color: var(--metric-aqi); border-bottom-color: rgba(244, 114, 182, 0.2); }
 
 .modal-footer {
     display: flex; justify-content: flex-end; gap: 8px;

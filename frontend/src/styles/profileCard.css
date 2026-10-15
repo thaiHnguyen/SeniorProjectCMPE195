@@ -120,7 +120,9 @@
 
 .threshold-item.ph .threshold-range,
 .threshold-item.temp .threshold-range,
-.threshold-item.hum .threshold-range {
+.threshold-item.hum .threshold-range,
+.threshold-item.pressure .threshold-range,   /* NEW */
+.threshold-item.aqi .threshold-range {       /* NEW */
     color: var(--accent);
 }
 

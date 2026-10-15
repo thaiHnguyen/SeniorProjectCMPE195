@@ -8,14 +8,19 @@ import "../styles/sensorCard.css";
  *  temp: C or F
  *  Humidity: %
  *  pH: double
+ *  Air Pressure: hPa (BME680)            NEW
+ *  Air Quality Score: 1-4 (BME680)       NEW  (1 Good, 2 Moderate, 3 Poor, 4 Unhealthy)
  *  status: Normal/Warning/Danger
  */
 
 // Must match TOLERANCE in backend/src/services/alert_evaluator.py
-const TOLERANCE = { temperature: 2.0, humidity: 5.0, ph: 0.3 };
+const TOLERANCE = { temperature: 2.0, humidity: 5.0, ph: 0.3, pressure: 10.0, aqi_score: 1 };
 
 // Suffix for non-temperature metrics; temperature comes from the context
-const UNIT_LABEL = { humidity: " %", ph: "" };
+const UNIT_LABEL = { humidity: " %", ph: "", pressure: " hPa", aqi_score: "" };
+
+// NEW: meaning of each air quality score, shown as a hover hint on the card
+const AQI_LABEL = { 1: "Good", 2: "Moderate", 3: "Poor", 4: "Unhealthy" };
 
 function SensorCard({ title, value, unit, min, max, metric }) {
     const { tempUnit } = useTempUnit();
@@ -34,12 +39,19 @@ function SensorCard({ title, value, unit, min, max, metric }) {
         status = "danger";
     }
     // Convert only for display, as the last step
+    // NEW: pressure rounded to 1 decimal so "1013.25 hPa" doesn't overflow the card
+    const shown = metric === "pressure" ? Number(currentValue.toFixed(1)) : currentValue;
     const display =
         metric === "temperature" ? formatTemp(currentValue, tempUnit) 
-                                : `${currentValue}${UNIT_LABEL[metric] ?? ""}`;
+                                : `${shown}${UNIT_LABEL[metric] ?? ""}`;
+
+    // NEW: hover hint explaining the 1-4 scale (other cards have no hint)
+    const hint = metric === "aqi_score"
+        ? `${AQI_LABEL[currentValue] ?? "Unknown"} (1 Good · 2 Moderate · 3 Poor · 4 Unhealthy)`
+        : undefined;
 
     return (
-        <div className={`sensor-card ${status}`}>
+        <div className={`sensor-card ${status}`} title={hint}>
             <h3>{title}</h3>
             <p className="sensor-value">
                 {display}

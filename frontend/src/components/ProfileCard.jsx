@@ -4,7 +4,9 @@
  * 
  * Props:
  *  - profile: {id, name, description, ph_min, ph_max, temp_min, temp_max
- *              humidity_min, humidity_max, is_active}
+ *              humidity_min, humidity_max,
+ *              pressure_min, pressure_max, aqi_min, aqi_max,   <- NEW (from BME680)
+ *              is_active}
  *  - onEdit(profile)
  *  - onDuplicate(profile)
  *  - onUse(profile)
@@ -89,6 +91,19 @@ function ProfileCard({profile, onEdit, onDuplicate, onUse, onDelete}) {
                 <div className="threshold-item hum">
                     <div className="threshold-label">Humidity</div>
                     <div className="threshold-range">{profile.humidity_min} - {profile.humidity_max}%</div>
+                </div>
+
+                {/* NEW: air pressure from BME680 thresholds ("--" if an older backend doesn't send them) */}
+                <div className="threshold-item pressure">
+                    <div className="threshold-label">Air Pressure</div>
+                    <div className="threshold-range">
+                        {profile.pressure_min ?? "--"} - {profile.pressure_max ?? "--"} hPa
+                    </div>
+                </div>
+
+                <div className="threshold-item aqi">
+                    <div className="threshold-label">Air Quality Score</div>
+                    <div className="threshold-range">{profile.aqi_min ?? "--"} - {profile.aqi_max ?? "--"}</div>
                 </div>
             </div>
         </div>

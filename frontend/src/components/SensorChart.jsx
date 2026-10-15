@@ -4,7 +4,11 @@ import { useTempUnit } from "../contexts/TempUnitContext.jsx";
 import { toDisplayTemp, tempSymbol } from "../utils/units.js";
 
 // Suffix for non-temperature metrics; temperature comes from the context
-const UNIT_LABEL = { humidity: "%", ph: "" };
+const UNIT_LABEL = { humidity: "%", ph: "", pressure: " hPa", aqi_score: "" };
+
+// NEW: the y-axis column is 42px wide, too narrow for "1013.3 hPa", so pressure
+// axis labels show the number only (the unit is in the chart title, tooltip and footer)
+const AXIS_HIDE_UNIT = new Set(["pressure"]);
 
 // Chart vertical padding (in viewBox %)
 const TOP_PADDING = 15;
@@ -45,6 +49,7 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
     };
 
     const unit = metric === "temperature" ? tempSymbol(tempUnit) : UNIT_LABEL[metric] ?? "";
+    const axisUnit = AXIS_HIDE_UNIT.has(metric) ? "" : unit;   // NEW
 
     // Trim float noise from conversion (82.49000000000001)
     const fmt = (n) => Number(n.toFixed(2));
@@ -207,7 +212,7 @@ function SensorChart({title, metric, data = [], timestamps = []}) {
                     <div className="chart-axis-labels">
                         {ticks.map((tick, i) => (
                             <span key={i} className="axis-label" style={{ top: `${tick.y}%` }}>
-                                {tick.value}{unit}
+                                {tick.value}{axisUnit}
                             </span>
                         ))}
                     </div>

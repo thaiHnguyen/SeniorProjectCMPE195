@@ -83,6 +83,10 @@ export default function useSettings() {
             temp_max: sourceProfile.temp_max,
             humidity_min: sourceProfile.humidity_min,
             humidity_max: sourceProfile.humidity_max,
+            pressure_min: sourceProfile.pressure_min,   // NEW
+            pressure_max: sourceProfile.pressure_max,   // NEW
+            aqi_min: sourceProfile.aqi_min,             // NEW
+            aqi_max: sourceProfile.aqi_max,             // NEW
         };
         return await createProfile(newProfileData);
     }, [createProfile]);

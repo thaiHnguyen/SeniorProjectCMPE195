@@ -153,6 +153,48 @@ function ProfileModal({profile, onSave, onClose}) {
                     </div>
                 </div>
 
+                {/* NEW: Air Pressure Range (BME680) */}
+                <h3 className="range-header pressure">Air Pressure (hPa)</h3>
+                <div className="form-row">
+                    <div className="form-group">
+                        <label className="form-label">Min</label>
+                        <input className="form-input" type="number"
+                            step="1" min="300" max="1100"
+                            value={form.pressure_min ?? ""}
+                            onChange={(e) => updateNumber("pressure_min", e.target.value)} 
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Max</label>
+                        <input className="form-input" type="number"
+                            step="1" min="300" max="1100"
+                            value={form.pressure_max ?? ""}
+                            onChange={(e) => updateNumber("pressure_max", e.target.value)} 
+                        />
+                    </div>
+                </div>
+
+                {/* NEW: Air Quality Score Range (BME680): 1 Good, 2 Moderate, 3 Poor, 4 Unhealthy */}
+                <h3 className="range-header aqi">Air Quality Score (1 Good – 4 Unhealthy)</h3>
+                <div className="form-row">
+                    <div className="form-group">
+                        <label className="form-label">Min</label>
+                        <input className="form-input" type="number"
+                            step="1" min="1" max="4"
+                            value={form.aqi_min ?? ""}
+                            onChange={(e) => updateNumber("aqi_min", e.target.value)} 
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Max</label>
+                        <input className="form-input" type="number"
+                            step="1" min="1" max="4"
+                            value={form.aqi_max ?? ""}
+                            onChange={(e) => updateNumber("aqi_max", e.target.value)} 
+                        />
+                    </div>
+                </div>
+
                 <div className="modal-footer">
                     <button className="btn-cancel" onClick={onClose}>
                         Cancel
@@ -164,7 +206,6 @@ function ProfileModal({profile, onSave, onClose}) {
                 </div>
             </div>
         </div>
-
     );
 }
 

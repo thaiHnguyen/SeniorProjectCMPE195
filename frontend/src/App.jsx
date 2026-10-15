@@ -39,7 +39,8 @@ function App() {
 
         const poll = async () => {
             try {
-                const alerts = await getAlerts({ severity: "critical", limit: 20 });
+                // CHANGED: backend severity is now normal|warning|danger (was "critical")
+                const alerts = await getAlerts({ severity: "danger", limit: 20 });
                 if (!cancelled) setDangerAlerts(alerts);
             } catch (e) {
                 console.error("Alert poll failed:", e);   // don't break the dashboard

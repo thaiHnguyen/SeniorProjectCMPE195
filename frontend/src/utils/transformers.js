@@ -32,6 +32,15 @@ export function mapActiveConfigToThresholds(config) {
             min: config?.ph_min ?? 0,
             max: config?.ph_max ?? 0,
         },
+        // NEW: BME680 thresholds
+        pressure: {
+            min: config?.pressure_min ?? 0,
+            max: config?.pressure_max ?? 0,
+        },
+        aqi_score: {
+            min: config?.aqi_min ?? 0,
+            max: config?.aqi_max ?? 0,
+        },
     };
 }
 
@@ -41,6 +50,10 @@ export function mapLatestReadingsToCurrent(latestResponse) {
     let temperature = null;
     let humidity = null;
     let ph = null;
+
+    let pressure = null;    // NEW
+    let aqiScore = null;    // NEW
+    
     let latestTimestamp = null;
 
     rows.forEach((row) => {
@@ -57,6 +70,17 @@ export function mapLatestReadingsToCurrent(latestResponse) {
             }
         }
 
+        // NEW: pressure + air quality score are taken from the BME680 only
+        // (the BME280 also reports pressure; we ignore it on purpose)
+        if (row.sensor_type === "bme680") {
+            if (row.pressure !== null && row.pressure !== undefined) {
+                pressure = row.pressure;
+            }
+            if (row.aqi_score !== null && row.aqi_score !== undefined) {
+                aqiScore = row.aqi_score;
+            }
+        }
+
         if (row.sensor_type === "ph") {
             if (row.ph !== null && row.ph !== undefined) {
                 ph = row.ph;
@@ -68,6 +92,8 @@ export function mapLatestReadingsToCurrent(latestResponse) {
         temperature,
         humidity,
         ph,
+        pressure,               // NEW
+        aqi_score: aqiScore,    // NEW
         timestamp: latestTimestamp,
     };
 }
@@ -96,6 +122,7 @@ export function buildDashboardData({
     temperatureHistory,
     humidityHistory,
     phHistory,
+    bme680History,   // NEW
 }) {
     return {
         device: mapSystemStatusToDevice(systemStatus),
@@ -108,6 +135,10 @@ export function buildDashboardData({
             ),
             humidity: mapHistoricalRowsToMetricChart(humidityHistory, "humidity"),
             ph: mapHistoricalRowsToMetricChart(phHistory, "ph"),
+
+            pressure: mapHistoricalRowsToMetricChart(bme680History, "pressure"),     // NEW
+            aqi_score: mapHistoricalRowsToMetricChart(bme680History, "aqi_score"),   // NEW
+
         },
     };
 }

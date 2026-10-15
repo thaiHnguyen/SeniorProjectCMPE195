@@ -39,6 +39,7 @@ export default function useDashboardData() {
                     tempHistory,
                     humidityHistory,
                     phHistory,
+                    bme680History,   // NEW: pressure + air quality score
                 ] = await Promise.all([
                     fetchSystemStatus(),
                     fetchLatestReadings(),
@@ -48,6 +49,8 @@ export default function useDashboardData() {
                     fetchHistoricalData({ sensorType: "bme280", hours: 24, limit: 3000 }),
                     fetchHistoricalData({ sensorType: "bme280", hours: 24, limit: 3000 }),
                     fetchHistoricalData({ sensorType: "ph",     hours: 24, limit: 3000 }),
+                    // NEW: one BME680 fetch feeds both new charts
+                    fetchHistoricalData({ sensorType: "bme680", hours: 24, limit: 3000 }),
                 ]);
 
                 // Transform data
@@ -65,6 +68,9 @@ export default function useDashboardData() {
                         "humidity"
                     ),
                     ph: mapHistoricalRowsToMetricChart(phHistory, "ph"),
+                    // NEW: air pressure and aqi from BME680
+                    pressure: mapHistoricalRowsToMetricChart(bme680History, "pressure"),
+                    aqi_score: mapHistoricalRowsToMetricChart(bme680History, "aqi_score"),
                 });
             } catch (err) {
                 console.error(err);

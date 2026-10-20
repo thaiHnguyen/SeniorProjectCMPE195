@@ -1,0 +1,61 @@
+# CD: deploy the backend to the Raspberry Pi after CI passes on main.
+#
+# Runs on a self-hosted GitHub runner installed ON the Pi (label: hydro-pi),
+# so GitHub never needs network access to the Pi. Setup: docs/CI_CD.md
+#
+# OFF until the Pi is set up: the job only runs when the repository variable
+# PI_DEPLOY_ENABLED is "true" (Settings -> Secrets and variables -> Actions -> Variables).
+# Without that, pushes to main don't leave jobs stuck "waiting for a runner".
+#
+# Security: this workflow never runs for pull requests, so code from a PR or a
+# fork can't execute on the Pi. Keep it that way: don't add a pull_request trigger.
+
+name: Deploy to Pi
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:        # "Run workflow" button: redeploy latest main by hand
+
+# One deploy at a time; a newer one waits instead of cancelling a deploy mid-way
+concurrency:
+  group: deploy-pi
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy backend to hydro-pi
+    if: >-
+      vars.PI_DEPLOY_ENABLED == 'true' && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.event == 'push')
+      )
+    runs-on: [self-hosted, hydro-pi]
+    timeout-minutes: 15
+    environment: raspberry-pi       # shows each deploy under the repo's "Deployments"
+    steps:
+      # Gets the latest deploy.sh; the deploy itself happens in the Pi's own
+      # repo folder (PI_DEPLOY_DIR), not in this checkout
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Deploy
+        env:
+          DEPLOY_DIR: ${{ vars.PI_DEPLOY_DIR }}
+          SERVICE_NAME: ${{ vars.PI_SERVICE_NAME || 'hydroponic' }}
+          HEALTH_URL: ${{ vars.PI_HEALTH_URL || 'http://localhost:8000/api/health' }}
+          # Deploy exactly the commit CI tested (manual runs: latest main)
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha || '' }}
+        run: |
+          if [ -z "$DEPLOY_DIR" ]; then
+            echo "Set the repository variable PI_DEPLOY_DIR to the repo folder on the Pi" >&2
+            exit 1
+          fi
+          bash deploy/deploy.sh

@@ -48,6 +48,9 @@ export function TempUnitProvider({children}) {
     );
 }
 
+// The hook lives next to its Provider on purpose. This rule only affects Vite's
+// hot-reload during development, not the app itself.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTempUnit() {
     return useContext(TempUnitContext);
 }

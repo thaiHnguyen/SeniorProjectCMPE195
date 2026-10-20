@@ -1,0 +1,4 @@
+# Tells actionlint (workflow linter) about our self-hosted runner label
+self-hosted-runner:
+  labels:
+    - hydro-pi

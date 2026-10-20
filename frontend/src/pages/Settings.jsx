@@ -19,7 +19,7 @@ import useSettings from "../hooks/useSettings.js";
 function Settings() {
     // Data + CRUD from hook
     const {
-        profiles, activeProfile, loading, error,
+        profiles, loading, error, 
         createProfile, updateProfile, deleteProfile,
         duplicateProfile, activateProfile,
     } = useSettings();
@@ -98,7 +98,7 @@ function Settings() {
         }
     };
 
-    // Save from modal — create or update depending on whether id exists
+    // Save from modal: create or update depending on whether id exists
     const handleSave = async (formData) => {
         try {
             if (formData.id) {
@@ -109,8 +109,8 @@ function Settings() {
                     temp_min: formData.temp_min, temp_max: formData.temp_max,
                     humidity_min: formData.humidity_min, humidity_max: formData.humidity_max,
 
-                    pressure_min: formData.pressure_min, pressure_max: formData.pressure_max,  // NEW
-                    aqi_min: formData.aqi_min, aqi_max: formData.aqi_max,                      // NEW
+                    pressure_min: formData.pressure_min, pressure_max: formData.pressure_max,
+                    aqi_min: formData.aqi_min, aqi_max: formData.aqi_max,  
                     
                 });
                 showToast(`Updated "${formData.name}"`);

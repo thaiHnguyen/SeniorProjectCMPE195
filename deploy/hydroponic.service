@@ -1,0 +1,31 @@
+# systemd service for the backend on the Raspberry Pi.
+#
+# Install (once), after replacing <pi-user> and <repo-folder>:
+#   sudo cp deploy/hydroponic.service /etc/systemd/system/hydroponic.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hydroponic
+#
+# Useful:
+#   sudo systemctl status hydroponic
+#   sudo journalctl -u hydroponic -f        # live log
+#
+# Settings come from <repo-folder>/.env (loaded by backend/src/config/settings.py).
+
+[Unit]
+Description=Smart Hydroponic backend (FastAPI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=<pi-user>
+# Must be the repo root: DATABASE_PATH=./data/hydroponic.db is relative to it
+WorkingDirectory=/home/<pi-user>/<repo-folder>
+# Use the venv's python if the project has one (…/venv/bin/python); otherwise /usr/bin/python3
+ExecStart=/home/<pi-user>/<repo-folder>/venv/bin/python -m backend.src.main
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -80,9 +80,13 @@ class DataCollector:
         self.sensor_manager = None
         self.read_count = 0
         self.alert_count = 0
-        self.evaluator = AlertEvaluator()
-        self._config_cache = None      # avoids a DB read every cycle
-        self._warned_no_config = False # log the missing-config case once
+        # CHANGED (login): one evaluator per user. Each keeps its own alert state
+        # (hysteresis, cooldowns), because the same reading can be DANGER for one
+        # user's profile and NORMAL for another's.
+        self.evaluators: dict[int, AlertEvaluator] = {}
+        # {user_id: active profile}, avoids a DB read every cycle. None = reload
+        self._config_cache: Optional[dict] = None
+        self._warned_no_config = False # log the no-users case once
         
     async def start(self):
         """Start background data collection"""
@@ -189,63 +193,74 @@ class DataCollector:
             "interval_seconds": settings.sensor_read_interval,
         }
 
-    def invalidate_config(self):
+    def invalidate_config(self, user_id: Optional[int] = None):
         """
-        Called when active threshold profile change
+        Called when a user's active threshold profile changes
         (DANGER state at one profile can be NORMAL in another one when switching)
+
+        (login): user_id -> reset only that user's alert state.
+        No user_id (e.g. a new account) -> just reload the profile list.
         """
         self._config_cache = None
         self._warned_no_config = False
-        self.evaluator.reset()
-        logger.info("Threshold profile changed - alert state reset")
+        if user_id is not None:
+            evaluator = self.evaluators.get(user_id)
+            if evaluator:
+                evaluator.reset()
+            logger.info(f"Threshold profile changed for user {user_id} - alert state reset")
 
-    async def _get_config(self):
+    async def _get_configs(self) -> dict:
         """
-        Fetch the active config, cached until invalidate
+        CHANGED (login): every user's active profile as {user_id: config},
+        cached until invalidate_config()
         """
         if self._config_cache is None:
-            raw = await db_manager.get_active_configuration()
-            if raw is None:
-                return None
-            
-            #Db returns a dict; evaluator reads attr
-            self._config_cache = SimpleNamespace(**raw)
+            rows = await db_manager.get_all_active_configurations()
+            # Db returns dicts; evaluator reads attributes
+            self._config_cache = {row["user_id"]: SimpleNamespace(**row) for row in rows}
+            # Forget evaluators of users who no longer have an active profile
+            for uid in list(self.evaluators):
+                if uid not in self._config_cache:
+                    del self.evaluators[uid]
         return self._config_cache
 
     async def _evaluate_alerts(self, readings: dict):
         """
-        Check each reading against the active thresholds and persist any
-        confirmed state changes.
+        Check each reading against EVERY user's active thresholds and persist
+        any confirmed state changes, tagged with that user.
 
         Never raises - alerting problems must not stop data collection.
         """
-        config = await self._get_config()
-        if config is None:
+        configs = await self._get_configs()
+        if not configs:
             if not self._warned_no_config:
-                logger.warning("No active threshold configuration - alerts disabled")
+                logger.warning("No user has an active threshold profile - alerts disabled")
                 self._warned_no_config = True
             return
 
-        for sensor_type, data in readings.items():
-            if data.get("status") != "ok":
-                continue
+        for user_id, config in configs.items():
+            evaluator = self.evaluators.setdefault(user_id, AlertEvaluator())
 
-            # A sensor may report several metrics (BME280: temp + humidity)
-            for metric in METRIC_BOUNDS:
-                if metric not in data:
-                    continue
-                # NEW: skip metrics this sensor isn't the source of
-                allowed = METRIC_SENSORS.get(metric)
-                if allowed and sensor_type not in allowed:
+            for sensor_type, data in readings.items():
+                if data.get("status") != "ok":
                     continue
 
-                transition = self.evaluator.evaluate(
-                    sensor_type, metric, data[metric], config
-                )
-                if transition:
-                    await self._record_alert(transition)
+                # A sensor may report several metrics (BME280: temp + humidity)
+                for metric in METRIC_BOUNDS:
+                    if metric not in data:
+                        continue
+                    # skip metrics this sensor isn't the source of
+                    allowed = METRIC_SENSORS.get(metric)
+                    if allowed and sensor_type not in allowed:
+                        continue
 
-    async def _record_alert(self, t):
+                    transition = evaluator.evaluate(
+                        sensor_type, metric, data[metric], config
+                    )
+                    if transition:
+                        await self._record_alert(transition, user_id)
+
+    async def _record_alert(self, t, user_id: int):
         """Persist one transition, and notify if it warrants it."""
         recovered = t.to_state == AlertState.NORMAL
         message = (
@@ -259,6 +274,7 @@ class DataCollector:
 
         try:
             await db_manager.create_alert({
+                "user_id": user_id,  #login: whose profile raised it
                 "alert_type": "recovery" if recovered else "threshold_breach",
                 "sensor_type": t.sensor_type,
                 "message": message,
@@ -268,10 +284,10 @@ class DataCollector:
                 "threshold_max": t.threshold_max,
             })
             self.alert_count += 1
-            logger.info(f"Alert: {message}")
+            logger.info(f"Alert (user {user_id}): {message}")
         except Exception as e:
-            # Log and move on - a failed alert insert must not cost us readings
-            logger.error(f"Failed to store alert for {t.sensor_type}: {e}")
+            # Log and move on, a failed alert insert must not cost us readings
+            logger.error(f"Failed to store alert for {t.sensor_type} (user {user_id}): {e}")
 
         if t.should_notify:
             # TODO(Phase 4): web push

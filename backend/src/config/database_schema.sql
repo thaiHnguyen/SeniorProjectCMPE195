@@ -1,10 +1,10 @@
 -- Smart Hydroponic System Database Schema
 -- 
--- DESIGN PHILOSOPHY:
+-- DESIGN CONCEPTS:
 -- Threshold configurations are flexible and can represent:
---   1. Plant-specific profiles (e.g., "Lettuce", "Tomato")
---   2. System-specific settings (e.g., "My Greenhouse Setup")
---   3. Environmental presets (e.g., "Summer Configuration")
+--   1. Plant-specific profiles ("Lettuce", "Tomato")
+--   2. System-specific settings ("My Greenhouse Setup")
+--   3. Environmental presets ("Summer Configuration")
 -- Users can use provided templates or create custom configurations.
 
 -- SENSOR READINGS
@@ -29,18 +29,43 @@ ON sensor_readings(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_sensor_readings_type 
 ON sensor_readings(sensor_type, timestamp DESC);
 
+-- USERS & SESSIONS (NEW: login/logout)
+-- Passwords are never stored: only a salted scrypt hash (see services/auth.py).
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE COLLATE NOCASE,  -- case-insensitive: A@x.com == a@x.com
+    password_hash TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
--- ============================================================
+-- One row per signed-in browser. We store a SHA-256 of the token, not the token
+-- itself, so a leaked database can't be used to sign in as anyone.
+-- Deleting the row = logout.
+CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+
+
 -- THRESHOLD CONFIGURATIONS
--- ============================================================
 -- Flexible threshold profiles that can represent:
 --   - Plant types (Lettuce, Tomato, Basil)
 --   - Custom system setups (My Indoor Garden, Greenhouse A)
 --   - Environmental presets (Summer, Winter, Optimal)
--- Only one configuration can be active at a time.
+-- CHANGED (login): profiles belong to a user.
+--   user_id IS NULL     -> template (the presets below). Never shown or used for
+--                          alerts directly; copied into every new account.
+--   user_id = <user>    -> that user's own profile. Each user has one active profile.
+-- Names are unique per user (and among templates) - see the indexes below.
 CREATE TABLE IF NOT EXISTS threshold_configurations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
     description TEXT,  -- Optional: describe what this configuration is for
     
     -- pH thresholds
@@ -84,18 +109,35 @@ CREATE TABLE IF NOT EXISTS threshold_configurations (
     CHECK(aqi_min <= aqi_max)
 );
 
--- Ensure only one active configuration at a time
+-- NEW: name is unique per user, and unique among templates.
+-- (A plain UNIQUE(user_id, name) wouldn't work for templates: SQLite treats
+-- NULL user_ids as all different, so INSERT OR IGNORE would re-add presets.)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_config_user_name
+ON threshold_configurations(user_id, name) WHERE user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_config_template_name
+ON threshold_configurations(name) WHERE user_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_config_user_active
+ON threshold_configurations(user_id, is_active);
+
+-- Ensure only one active configuration at a time PER USER
+-- CHANGED: used to deactivate every other row in the table
 CREATE TRIGGER IF NOT EXISTS one_active_configuration
 BEFORE UPDATE OF is_active ON threshold_configurations
 WHEN NEW.is_active = 1
 BEGIN
-    UPDATE threshold_configurations SET is_active = 0 WHERE id != NEW.id;
+    UPDATE threshold_configurations SET is_active = 0
+    WHERE id != NEW.id AND user_id IS NEW.user_id;
 END;
 
 
 -- ALERTS
 CREATE TABLE IF NOT EXISTS alerts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- NEW (login): whose active profile produced this alert. NULL = alerts from
+    -- before accounts existed; they aren't shown to anyone.
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     alert_type TEXT NOT NULL,
     sensor_type TEXT,
     message TEXT NOT NULL,
@@ -116,6 +158,9 @@ CREATE TABLE IF NOT EXISTS alerts (
 CREATE INDEX IF NOT EXISTS idx_alerts_unread 
 ON alerts(is_read, created_at DESC);
 
+CREATE INDEX IF NOT EXISTS idx_alerts_user
+ON alerts(user_id, created_at DESC);
+
 -- SYSTEM SETTINGS
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
@@ -125,9 +170,10 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 
--- ============================================================
--- DEFAULT CONFIGURATIONS
--- ============================================================
+-- DEFAULT CONFIGURATIONS (templates)
+-- CHANGED (login): these rows have user_id NULL, so they are templates.
+-- Every new account gets its own copy at sign-up (db_manager.seed_user_profiles);
+-- is_active = 1 below marks which copy starts out active.
 -- Pre-loaded configurations serve as examples and starting points.
 -- Users can:
 --   1. Use these as-is for common plants

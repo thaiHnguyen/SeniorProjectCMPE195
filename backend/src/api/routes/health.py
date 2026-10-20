@@ -2,13 +2,15 @@
 Health check and system status endpoints
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from datetime import datetime
 
 from backend.src.config.settings import settings 
 from backend.src.sensors.sensor_factory import SensorFactory
 from backend.src.storage import db_manager
 from backend.src.services.data_collector import data_collector
+
+from backend.src.api.routes.auth import get_optional_user  
 
 router = APIRouter(prefix="/api", tags=["health"])
 
@@ -28,7 +30,7 @@ async def health_check():
 
 
 @router.get("/status")
-async def system_status():
+async def system_status(user: dict | None = Depends(get_optional_user)):
     """
     Detailed system status
 
@@ -45,7 +47,11 @@ async def system_status():
     sensor_status = sensor_manager.get_all_status()
 
     # Get active configuration
-    active_config = await db_manager.get_active_configuration()
+    # CHANGED (login): profiles are per user. Logged in -> your active profile;
+    # not logged in -> None. The route itself stays public.
+    active_config = (
+        await db_manager.get_active_configuration(user["id"]) if user else None
+    )
 
     return {
         "status": "online",

@@ -1,32 +1,38 @@
-# Backend Update Oct 15: BME680 Air Pressure + Air Quality Score
+# Backend Update Oct 19: Login / Logout + `.env` setup
 
-**Branch:** `backend-update` -> merged into `main` 
+**Branch:** `login` -> merging into `main`
 
-The dashboard now shows **Air Pressure** and **Air Quality Score** from the BME680, each with a card, a 24h chart, and min/max thresholds in profiles.
+Users now **sign in** before seeing the dashboard. Each account has its **own threshold profiles and its own alerts**. Configuration also moved into a `.env` file.
 
-> **The Pi must pull and restart the backend.** Until it does, the dashboard shows Air Quality as `0` and Air Pressure as `DANGER`, because the old backend doesn't send the new fields.
-
+> **The Pi must create a `.env`, pull, and restart the backend.** Until it does, Create Account and Sign In show **"Not Found"**, because the old backend has no login routes.
 ---
 
 ## What changed
 
-### Backend
-- Air Quality Score is now saved: The BME680 code already calculated `aqi_score` (1 Good, 2 Moderate, 3 Poor, 4 Unhealthy) but never stored it. New `aqi_score` column in `sensor_readings`. 
+### Login
+- **Accounts:** new `users` and `sessions` tables. Passwords are stored as a salted **scrypt hash**, never as plain text.
+- **New endpoints:**
+  - `POST /api/auth/register`: create an account
+  - `POST /api/auth/login`: returns a token
+  - `POST /api/auth/logout`: ends the session
+  - `GET /api/auth/me`: who is signed in
+- **Sessions last 6 hours.** "Remember me" checked keeps you signed in after closing the browser (still up to 6 hours). Unchecked signs you out when the browser closes.
+- **Profiles are per user:** every new account starts with its **own copy of the 10 example profiles**, with "Standard Hydroponic Range" active. Adding, editing, deleting or activating a profile only affects that account.
+- **Alerts are per user:** every reading is checked against **each user's active profile**, and each user only sees their own alerts.
+- **What needs a login:** `/api/configurations/*` and `/api/alerts/*` return **401** without one. Sensor data (`/api/sensors/*`, `/api/health`, `/api/status`) stays **public**, since there's one Pi and one garden.
 
-- New profile thresholds: `pressure_min` / `pressure_max` (hPa, default **990–1030**) and `aqi_min` / `aqi_max` (default **1–2**) in `threshold_configurations`.
+### `.env` setup
+- Settings are read from a **`.env` file in the repo root**. It's gitignored, so `git pull` won't create it. Copy it from `.env.example` (step 3 below).
+- `.env` is now found **even if the backend starts from another folder**. Before, the settings silently fell back to defaults (e.g. `USE_MOCK_SENSORS` was ignored).
+- The hardcoded ngrok URL was removed from `api.js`. The frontend reads it from `frontend/.env`.
 
-- Alerts for the new metrics: Pressure tolerance **±10 hPa**, Air Quality **±1 step** (score 3 = WARNING, 4 = DANGER with the default 1–2 range). Pressure and Air Quality alerts come from the **BME680 only**, so the BME280 doesn't raise a duplicate
-
-- Alert severity renamed: `info / warning / critical` -> **`normal / warning / danger`**, the same names the dashboard uses. Old alerts are renamed automatically. 
-
-- Automatic DB upgrade: On startup the backend adds the missing columns and rebuilds the `alerts` table once. **No data is deleted**, and existing profiles get the default ranges.
-
-- Import fix: `main.py`, `sensors.py`, `health.py` imported `backend.src.database`, but that folder was renamed to `storage/`. The backend wouldn't start on a fresh clone.
-
-- Pydantic v2 cleanup: `@validator` -> `@field_validator`, `class Config` → `ConfigDict`, `.dict()` -> `.model_dump()`. 
+### Automatic DB upgrade (first start only)
+- The old shared profiles (including any you created, e.g. `"string"`) are **moved to `threshold_configurations_legacy`, not deleted**. Profiles now belong to accounts, so everyone starts from fresh copies of the examples.
+- `alerts` gets a `user_id` column. **Old alerts no longer show on the dashboard** because they have no owner. They're still in the database.
+- Sensor readings are untouched.
 
 ### Tests
-- `tests/test_alert_evaluator.py`: new tests for pressure and Air Quality bands, **31/31 passing**
+- `tests/test_auth.py`: 14 new tests covering login, logout, expired sessions, users not seeing each other's profiles or alerts, and per-user alerts. **46/46 passing.**
 
 ---
 
@@ -43,18 +49,42 @@ git log --oneline -1
 cp data/hydroponic.db data/hydroponic.db.bak
 
 # 3. Get the new code
-git switch main
-git pull origin main
-git log --oneline -1          # should what i've been commited lately to main
+git switch main               # use `git switch login` if it isn't merged yet
+git pull
+git log --oneline -1          # should show the login commit
 ```
 
-### 4. Restart the backend
+### 4. Create the `.env` (first time only)
+```bash
+cp .env.example .env
+nano .env
+```
+Set these values for the Pi:
+```bash
+APP_NAME=Smart Hydroponic System
+CONTROLLER_NAME=hydro-pi
+DEBUG=False
+LOG_LEVEL=INFO
+
+API_HOST=0.0.0.0
+API_PORT=8000
+
+DATABASE_PATH=./data/hydroponic.db
+
+USE_MOCK_SENSORS=False
+SENSOR_READ_INTERVAL=30
+
+ALLOWED_ORIGINS=*
+```
+> Only use keys that exist in `backend/src/config/settings.py`. An unknown key stops the backend from starting.
+
+### 5. Restart the backend
 Pulling alone isn't enough, because a running Python process keeps the old code until it restarts.
 
 **If it runs as a service:**
 ```bash
 sudo systemctl restart <service-name>
-sudo journalctl -u <service-name> -n 30     # check the startup log
+sudo journalctl -u <service-name> -n 40     # check the startup log
 ```
 
 **If it runs in a terminal or tmux:** press `Ctrl+C`, then:
@@ -62,48 +92,77 @@ sudo journalctl -u <service-name> -n 30     # check the startup log
 python -m backend.src.main
 ```
 
-> Always start it **from the repo root**. The DB path is `./data/hydroponic.db`, which is relative to the current folder. Started from anywhere else, the backend creates a new empty database and the old data looks like it's gone.
+> Always start it **from the repo root**. `DATABASE_PATH` is `./data/hydroponic.db`, which is relative to the current folder. Started from anywhere else, the backend creates a new empty database and the old data looks like it's gone.
 
-### 5. Check the startup log
+### 6. Check the startup log
 These lines appear **only on the first start** after the update:
 ```
-Migrated: added sensor_readings.aqi_score
-Migrated: added threshold_configurations.pressure_min
-Migrated: added threshold_configurations.pressure_max
-Migrated: added threshold_configurations.aqi_min
-Migrated: added threshold_configurations.aqi_max
-Migrated: alert severity renamed to normal|warning|danger
+Migrated: shared profiles kept in threshold_configurations_legacy; profiles are now per user
+Migrated: added alerts.user_id
 Database initialized
+No user has an active threshold profile - alerts disabled
 ```
-On later restarts they won't appear, and that's expected.
+The last line is expected: no accounts exist yet. Alerts turn on as soon as someone creates one.
+
+If the Pi skipped the Oct 15 update, you'll also see:
+```
+Migrated: added sensor_readings.aqi_score
+Migrated: alert severity renamed to normal|warning|danger
+```
+
+Also check which sensors actually connected:
+```
+Sensor modes - REAL: ['bme280', 'bme680', 'ph'] | MOCK: none
+```
+Any sensor listed under `MOCK` didn't connect; the warning just above it says why. Don't rely on the `Using REAL sensors` line: it only repeats the `.env` setting.
 
 ---
 
 ## Verify
 
+**1. Protected routes need a login** (should be `401`):
 ```bash
-curl https://expedition-23.ngrok.app/api/configurations/active
-#   should include: "pressure_min", "pressure_max", "aqi_min", "aqi_max"
-
-curl https://expedition-23.ngrok.app/api/sensors/latest
-#   every row should have an "aqi_score" key; the bme680 row should have a number 1-4
-#   (wait one read cycle, about 30s, after the restart)
+curl -i https://expedition-23.ngrok.app/api/configurations/
 ```
 
-Then **refresh the dashboard**:
-- **Air Pressure** card goes back to NORMAL (if the reading is inside 990–1030)
-- **Air Quality** card shows 1–4 instead of 0
-- **Air Quality chart** fills in from the update onward. Readings saved before it have no score, so the 24h line builds up over the day.
+**2. Create an account and sign in:**
+```bash
+curl -X POST https://expedition-23.ngrok.app/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Vy","email":"vy@example.com","password":"choose-a-password"}'
+
+curl -X POST https://expedition-23.ngrok.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"vy@example.com","password":"choose-a-password"}'
+#   copy the "token" value from the response
+```
+
+**3. Use the token** (should list your 10 profiles):
+```bash
+curl https://expedition-23.ngrok.app/api/configurations/ \
+  -H "Authorization: Bearer <token>"
+```
+
+**4. In the browser:** set `frontend/.env` to `VITE_API_BASE_URL=https://expedition-23.ngrok.app`, restart `npm run dev`, then:
+- **Create Account** works and opens Sign In with the email filled in
+- **Sign In** shows the dashboard with "Hi, <name>" and **Log out** in the navbar
+- **Settings** shows 10 profiles
+- **Refresh** keeps you signed in; **Log out** returns to the landing page
+
+> Accounts live in the database they were created in. An account made on a laptop (`localhost:8000`) doesn't exist on the Pi, so create one on each.
 
 ---
 
 ## Troubleshooting
 
-- No `Migrated:` lines, and `curl` still has no `pressure_min`: The backend wasn't restarted, or it runs from a different folder. Find where it runs from: `ps aux \| grep backend.src.main` and `sudo systemctl cat <service-name> \| grep -i "WorkingDirectory\|ExecStart"` 
-- `ModuleNotFoundError: No module named 'backend.src.database'`: Still on old code. `git pull` again. An old leftover `backend/src/database/` folder can be deleted; the code now uses `storage/`.
-- Air Quality still `0` after the restart: Wait one read cycle, then refresh the page. Check that `/api/sensors/latest` shows `aqi_score` on the bme680 row.
-- Danger popup never shows: Frontend and backend are out of sync. Both must be on the new `main` (the popup asks for `severity=danger`). 
-- `Logging error in Loguru Handler` on Windows | Only happens on Windows dev machines with auto-reload (`DEBUG=True`). It doesn't affect the Pi. Workaround: set `DEBUG=false`.
+- **"Not Found" on Create Account or Sign In:** the frontend is talking to a backend without the login code. Either the Pi wasn't restarted, or `frontend/.env` points somewhere else. Open `<backend-url>/docs`: there should be an **auth** section.
+- **No `Migrated:` lines, and `/docs` has no auth section:** the backend wasn't restarted, or it runs from a different folder. Find where it runs from: `ps aux | grep backend.src.main` and `sudo systemctl cat <service-name> | grep -i "WorkingDirectory\|ExecStart"`.
+- **Backend won't start with `Extra inputs are not permitted`:** `.env` has a key that isn't in `settings.py`. Remove it or check for typos.
+- **`USE_MOCK_SENSORS` seems ignored:** the same key appears twice in `.env` (the last one wins), or a system environment variable with that name overrides it (`echo $USE_MOCK_SENSORS`).
+- **Signed out after a while:** sessions end after 6 hours. Sign in again.
+- **Profiles from before the update are missing:** they're in `threshold_configurations_legacy`. Recreate any you need in your account from the Settings page.
+- **Danger popup never shows:** frontend and backend are out of sync. Both must be on the new `main`, and you must be signed in (alerts are per user).
+- **`Logging error in Loguru Handler` on Windows:** only happens on Windows dev machines with auto-reload (`DEBUG=True`). It doesn't affect the Pi. Workaround: set `DEBUG=False`.
 
 ### Rollback
 ```bash
@@ -112,3 +171,15 @@ git switch <previous-commit-or-branch>
 cp data/hydroponic.db.bak data/hydroponic.db
 # start the backend again
 ```
+> Restore the backup when rolling back: the old code doesn't know about accounts and would mix everyone's profiles together.
+
+---
+
+## Previous update (Oct 15): BME680 Air Pressure + Air Quality Score
+
+- **Air Quality Score is saved:** new `aqi_score` column in `sensor_readings` (1 Good, 2 Moderate, 3 Poor, 4 Unhealthy).
+- **New profile thresholds:** `pressure_min` / `pressure_max` (hPa, default **990–1030**) and `aqi_min` / `aqi_max` (default **1–2**).
+- **Alerts for the new metrics:** pressure ±10 hPa, Air Quality ±1 step. These come from the **BME680 only**, so the BME280 doesn't raise duplicates.
+- **Alert severity renamed:** `info / warning / critical` -> **`normal / warning / danger`**. Old alerts are renamed automatically.
+- **Import fix:** `backend.src.database` -> `backend.src.storage`, so the backend starts on a fresh clone.
+- **Pydantic v2 cleanup:** `@field_validator`, `ConfigDict`, `.model_dump()`.

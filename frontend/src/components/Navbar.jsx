@@ -4,7 +4,10 @@
  * CHANGED (layout): logo, tabs and account now share one row
  *  - Row 1: [Logo] [Dashboard | Settings | Appearance]          [Hi, User] [Log out]
  *  - Row 2: Controller name | <StatusIcon> online/offline | Last update: [time]
- *  - Divider 
+ *
+ * The logo replaces the "Smart Hydroponic Gardening System" text and follows the
+ * theme: Logo_Light.png on the light theme, Logo_dark.png on the dark theme.
+ * Clicking the logo reloads the page (the saved login keeps you signed in).
  *
  * Props:
  *  - deviceName, status, lastUpdated: row 2
@@ -14,15 +17,15 @@
 import React from "react";
 import onlineIcon from "../assets/icons/online.png";
 import offlineIcon from "../assets/icons/offline.png";
-import logoLight from "../assets/Logo_light.png";   
+import logoLight from "../assets/Logo_light.png";  
 import logoDark from "../assets/Logo_dark.png";     
 import { useTheme, LIGHT } from "../contexts/ThemeContext.jsx";
-import TabBar from "./TabBar.jsx";                
+import TabBar from "./TabBar.jsx";   
 import "../styles/typography.css";
 import "../styles/navbar.css";
 
 function Navbar({ deviceName, status, activeTab, onTabChange, userName, onLogout }) {
-  // NEW: pick the logo that matches the current theme
+  // pick the logo that matches the current theme
   const { theme } = useTheme();
   const logo = theme === LIGHT ? logoLight : logoDark;
 
@@ -38,11 +41,22 @@ function Navbar({ deviceName, status, activeTab, onTabChange, userName, onLogout
 
       {/* ROW 1: LOGO + TABS (left) | ACCOUNT (right) */}
       <div className="nav-top">
-        <img
-          src={logo}
-          alt="Smart Hydroponic Gardening System"
-          className="nav-logo"
-        />
+        {/* logo is a link that reloads the page */}
+        <a
+          href="/"
+          className="nav-logo-link"
+          title="Refresh"
+          onClick={(e) => {
+            e.preventDefault();          // stay on the current URL
+            window.location.reload();
+          }}
+        >
+          <img
+            src={logo}
+            alt="Smart Hydroponic Gardening System"
+            className="nav-logo"
+          />
+        </a>
 
         {onTabChange && (
           <TabBar activeTab={activeTab} onTabChange={onTabChange} />

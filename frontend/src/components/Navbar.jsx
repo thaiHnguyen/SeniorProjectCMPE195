@@ -4,6 +4,8 @@
  * - Second row:
  *      - Left Side: Device name: <StatusIcon> [Online | Offline]
  *      - Right Side: Latest Update: [Timestamp]
+ * 
+ * NEW (login): signed-in user's name + Log out button on the title row
  */
 import React from "react";
 import onlineIcon from "../assets/icons/online.png";
@@ -15,7 +17,7 @@ import { CELSIUS, FAHRENHEIT } from "../utils/units.js";
 import "../styles/typography.css";
 import "../styles/navbar.css";
 
-function Navbar({ deviceName, status, lastUpdated, darkMode, onToggleDarkMode, }) {
+function Navbar({ deviceName, status, lastUpdated, darkMode, onToggleDarkMode, userName, onLogout }) {
   // Unit comes from context rather than props
   const { tempUnit, setTempUnit } = useTempUnit();
 
@@ -29,8 +31,19 @@ function Navbar({ deviceName, status, lastUpdated, darkMode, onToggleDarkMode, }
   return (
     <nav className="navbar">
 
-      {/* TITLE */}
-      <div className="nav-title">Smart Hydroponic Gardening System</div>
+      {/* TITLE + ACCOUNT (NEW: login) */}
+      <div className="nav-top">
+        <div className="nav-title">Smart Hydroponic Gardening System</div>
+
+        {onLogout && (
+          <div className="nav-account">
+            {userName && <span className="nav-user">Hi, {userName}</span>}
+            <button type="button" className="nav-logout" onClick={onLogout}>
+              Log out
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* INFO */}
       <div className="nav-info">

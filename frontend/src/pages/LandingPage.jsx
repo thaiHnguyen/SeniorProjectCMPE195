@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { loginUser, registerUser } from "../services/api.js";   // NEW: login
+
 import logo from "../assets/logo.png";
 import hydroponicBg from "../assets/hydroponic-bg.png";
 
@@ -9,33 +11,77 @@ function LandingPage({ onLogin }) {
     const [showLogin, setShowLogin] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showCreateAccount, setShowCreateAccount] = useState(false);
-    
+
+    // NEW (login): form feedback
+    const [authError, setAuthError] = useState("");     // red message in the open popup
+    const [notice, setNotice] = useState("");           // green "account created" message
+    const [busy, setBusy] = useState(false);            // disables the submit button while waiting
+    const [signInEmail, setSignInEmail] = useState(""); // pre-fills Sign In after creating an account
+
+    // Switch popups and clear any old message
+    const openLogin = () => { setAuthError(""); setShowCreateAccount(false); setShowLogin(true); };
+    const openCreateAccount = () => { setAuthError(""); setNotice(""); setShowLogin(false); setShowCreateAccount(true); };
+
     // =========================
     // SIGN IN
     // =========================
-    const handleSubmit = (e) => {
-        e.preventDefault();
 
-        // For now, clicking Sign In opens the dashboard.
-        // Later we can connect this to FastAPI authentication.
-        onLogin();
+    // CHANGED: checks the email + password with the backend (POST /api/auth/login).
+    // Inputs are read by their `name` attribute, so the JSX below stays the same.
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+
+        setBusy(true);
+        setAuthError("");
+        try {
+            const user = await loginUser({
+                email: form.get("email"),
+                password: form.get("password"),
+                remember: form.get("remember") === "on",
+            });
+            onLogin(user);   // App.jsx switches to the dashboard
+        } catch (err) {
+            setAuthError(err.message || "Sign in failed. Please try again.");
+            setBusy(false);
+        }
     };
 
     // =========================
     // CREATE ACCOUNT
     // =========================
-    const handleCreateAccount = (e) => {
+
+    // CHANGED: creates the account on the backend (POST /api/auth/register),
+    // then opens Sign In with the email already filled in.
+    
+    const handleCreateAccount = async (e) => {
         e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        const password = form.get("password");
 
-        // Temporary:
-        // Later connect this to FastAPI registration.
-        alert("Account created successfully!");
+        // Checked here so the user gets the message before anything is sent
+        if (password !== form.get("confirmPassword")) {
+            setAuthError("Passwords do not match.");
+            return;
+        }
 
-        // Close Create Account
-        setShowCreateAccount(false);
-
-        // Open Sign In
-        setShowLogin(true);
+        setBusy(true);
+        setAuthError("");
+        try {
+            await registerUser({
+                name: form.get("name"),
+                email: form.get("email"),
+                password,
+            });
+            setSignInEmail(form.get("email"));
+            setNotice("Account created! Sign in to continue.");
+            openLogin();
+        } catch (err) {
+            setAuthError(err.message || "Could not create account. Please try again.");
+        } finally {
+            setBusy(false);
+        }
     };
 
     return (
@@ -78,7 +124,7 @@ function LandingPage({ onLogin }) {
 
                     <button
                         className="get-started-button"
-                        onClick={() => setShowLogin(true)}
+                        onClick={openLogin}
                     >
                         Get Started
                         <span>→</span>
@@ -199,7 +245,7 @@ function LandingPage({ onLogin }) {
                                 Gmail: thai.nguyen02@sjsu.edu
                             </a>
 
-                            <a href="https://www.linkedin.com/in/thai-nguyen-43275617b/"
+                            <a href="https://linkedin.com/in/thaih-nguyen"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -248,6 +294,11 @@ function LandingPage({ onLogin }) {
                             Sign in to your HydroGarden
                         </p>
 
+                        {/* NEW: "account created" message */}
+                        {notice && (
+                            <p className="login-notice" role="status">{notice}</p>
+                        )}
+
                         <form onSubmit={handleSubmit}>
 
                             <label htmlFor="email">
@@ -256,8 +307,11 @@ function LandingPage({ onLogin }) {
 
                             <input
                                 id="email"
+                                name="email"
                                 type="email"
                                 placeholder="Enter your email"
+                                defaultValue={signInEmail}
+                                autoComplete="email"
                                 required
                             />
 
@@ -269,12 +323,14 @@ function LandingPage({ onLogin }) {
 
                                 <input
                                     id="password"
+                                    name="password"
                                     type={
                                         showPassword
                                             ? "text"
                                             : "password"
                                     }
                                     placeholder="Enter your password"
+                                    autoComplete="current-password"
                                     required
                                 />
 
@@ -292,8 +348,10 @@ function LandingPage({ onLogin }) {
 
                             <div className="login-options">
 
+                                {/* Checked: stay signed in for 6 hours, even after closing the browser.
+                                    Unchecked: signed out when the browser closes. */}
                                 <label className="remember-me">
-                                    <input type="checkbox" />
+                                    <input type="checkbox" name="remember" />
                                     <span>Remember me</span>
                                 </label>
 
@@ -306,11 +364,17 @@ function LandingPage({ onLogin }) {
 
                             </div>
 
+                            {/* NEW: error from the backend (e.g. wrong password) */}
+                            {authError && (
+                                <p className="login-error" role="alert">{authError}</p>
+                            )}
+
                             <button
                                 type="submit"
                                 className="login-submit"
+                                disabled={busy}
                             >
-                                Sign In
+                                {busy ? "Signing in..." : "Sign In"}
                             </button>
 
                         </form>
@@ -324,10 +388,7 @@ function LandingPage({ onLogin }) {
                             <button
                                 type="button"
                                 className="create-account-link"
-                                onClick={() => {
-                                    setShowLogin(false);
-                                    setShowCreateAccount(true);
-                                }}
+                                onClick={openCreateAccount}
                             >
                                 Create account
                             </button>
@@ -338,9 +399,7 @@ function LandingPage({ onLogin }) {
                 </div>
 
             )}
-            {/* =========================
-                CREATE ACCOUNT POPUP
-            ========================= */}
+            {/*CREATE ACCOUNT POPUP*/}
 
             {showCreateAccount && (
 
@@ -403,8 +462,11 @@ function LandingPage({ onLogin }) {
 
                             <input
                                 id="create-name"
+                                name="name"
                                 type="text"
                                 placeholder="Enter your full name"
+                                autoComplete="name"
+                                maxLength={80}
                                 required
                             />
 
@@ -417,8 +479,10 @@ function LandingPage({ onLogin }) {
 
                             <input
                                 id="create-email"
+                                name="email"
                                 type="email"
                                 placeholder="Enter your email"
+                                autoComplete="email"
                                 required
                             />
 
@@ -433,12 +497,15 @@ function LandingPage({ onLogin }) {
 
                                 <input
                                     id="create-password"
+                                    name="password"
                                     type={
                                         showPassword
                                             ? "text"
                                             : "password"
                                     }
-                                    placeholder="Create a password"
+                                    placeholder="At least 8 characters"
+                                    autoComplete="new-password"
+                                    minLength={8}
                                     required
                                 />
 
@@ -466,8 +533,10 @@ function LandingPage({ onLogin }) {
 
                             <input
                                 id="confirm-password"
+                                name="confirmPassword"
                                 type="password"
                                 placeholder="Enter your password again"
+                                autoComplete="new-password"
                                 required
                             />
 
@@ -490,11 +559,17 @@ function LandingPage({ onLogin }) {
 
                             {/* CREATE ACCOUNT */}
 
+                            {/* NEW: error from the backend (email already used) */}
+                            {authError && (
+                                <p className="login-error" role="alert">{authError}</p>
+                            )}
+
                             <button
                                 type="submit"
                                 className="login-submit"
+                                disabled={busy}
                             >
-                                Create Account
+                                {busy ? "Creating account..." : "Create Account"}
                             </button>
 
                         </form>
@@ -509,10 +584,7 @@ function LandingPage({ onLogin }) {
                             <button
                                 type="button"
                                 className="create-account-link"
-                                onClick={() => {
-                                    setShowCreateAccount(false);
-                                    setShowLogin(true);
-                                }}
+                                onClick={openLogin}
                             >
                                 Sign In
                             </button>

@@ -39,3 +39,33 @@
 .status-offline{
     color: red;
 }
+
+/* NEW (login): title on the left, user + Log out on the right */
+.nav-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.nav-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+}
+
+.nav-logout {
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.nav-logout:hover {
+    background: var(--accent);
+}

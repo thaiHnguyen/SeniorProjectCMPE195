@@ -642,6 +642,35 @@
     transform: translateY(-2px);
 }
 
+/* NEW (login): button while waiting for the backend */
+.login-submit:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+/* NEW (login): wrong password, email taken, passwords don't match... */
+.login-error {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255, 99, 99, 0.12);
+    border: 1px solid rgba(255, 99, 99, 0.45);
+    color: #ff9b9b;
+    font-size: 14px;
+}
+
+/* NEW (login): "Account created! Sign in to continue." */
+.login-notice {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(91, 227, 155, 0.12);
+    border: 1px solid rgba(91, 227, 155, 0.45);
+    color: #5be39b;
+    font-size: 14px;
+}
+
 .create-account {
     margin-top: 24px;
 
@@ -807,9 +836,7 @@
     }
 }
 
-/* =========================================
-    CREATE ACCOUNT LINK
-========================================= */
+/* CREATE ACCOUNT LINK */
 
 .create-account-link {
     padding: 0;
@@ -834,9 +861,7 @@
 }
 
 
-/* =========================================
-    CREATE ACCOUNT BOX
-========================================= */
+/* CREATE ACCOUNT BOX */
 
 .create-account-box {
     max-width: 450px;
@@ -847,9 +872,7 @@
 }
 
 
-/* =========================================
-    TERMS CHECKBOX
-========================================= */
+/* TERMS CHECKBOX */
 
 .terms-checkbox {
     display: flex;
@@ -878,9 +901,7 @@
 }
 
 
-/* =========================================
-    SCROLLBAR
-========================================= */
+/* SCROLLBAR */
 
 .create-account-box::-webkit-scrollbar {
     width: 5px;
@@ -896,9 +917,7 @@
     border-radius: 10px;
 }
 
-/* =========================================
-    TEAM MEMBER DETAILS
-========================================= */
+/* TEAM MEMBER DETAILS */
 
 .team-member-detailed {
     min-width: 300px;

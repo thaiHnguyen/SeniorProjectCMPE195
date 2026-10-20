@@ -1,10 +1,10 @@
 # Backend Update Oct 15: BME680 Air Pressure + Air Quality Score
 
-**Branch:** `backend-update` → merged into `main` (commits `cf110a6`, `ce47d10`, `70c0500`)
+**Branch:** `backend-update` -> merged into `main` 
 
 The dashboard now shows **Air Pressure** and **Air Quality Score** from the BME680, each with a card, a 24h chart, and min/max thresholds in profiles.
 
-> ⚠️ **The Pi must pull and restart the backend.** Until it does, the dashboard shows Air Quality as `0` and Air Pressure as `DANGER`, because the old backend doesn't send the new fields.
+> **The Pi must pull and restart the backend.** Until it does, the dashboard shows Air Quality as `0` and Air Pressure as `DANGER`, because the old backend doesn't send the new fields.
 
 ---
 

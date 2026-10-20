@@ -8,8 +8,8 @@ import "../styles/sensorCard.css";
  *  temp: C or F
  *  Humidity: %
  *  pH: double
- *  Air Pressure: hPa (BME680)            NEW
- *  Air Quality Score: 1-4 (BME680)       NEW  (1 Good, 2 Moderate, 3 Poor, 4 Unhealthy)
+ *  Air Pressure: hPa (BME680)
+ *  Air Quality Score: 1-4 (BME680)
  *  status: Normal/Warning/Danger
  */
 
@@ -22,7 +22,8 @@ const UNIT_LABEL = { humidity: " %", ph: "", pressure: " hPa", aqi_score: "" };
 // NEW: meaning of each air quality score, shown as a hover hint on the card
 const AQI_LABEL = { 1: "Good", 2: "Moderate", 3: "Poor", 4: "Unhealthy" };
 
-function SensorCard({ title, value, unit, min, max, metric }) {
+// removed unused `unit` prop (units come from UNIT_LABEL / the temp context)
+function SensorCard({ title, value, min, max, metric }) {
     const { tempUnit } = useTempUnit();
 
     const currentValue = Number(value);

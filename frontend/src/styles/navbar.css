@@ -2,58 +2,48 @@
 .navbar {
     display: flex;
     flex-direction: column;
-    gap: 12;
+    gap: 10px;
     color: var(--text);
     border-bottom: 1px solid var(--accent);
     position: relative;
 }
 
-.nav-title{
-    font-size: 1.8rem;    
-    letter-spacing: 0.5px;
-}
-
-.nav-info{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.nav-item{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
-}
-
-.nav-item img {
-    width: 16px;
-    height: 16px;
-}
-.status-online{
-    color: var(--ok);
-}
-
-.status-offline{
-    color: red;
-}
-
-/* NEW (login): title on the left, user + Log out on the right */
+/* CHANGED (layout): one row with three areas: logo | tabs | account.
+   Grid keeps the tabs right after the logo and pushes the account to the far right. */
 .nav-top {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "logo tabs account";
     align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
+    column-gap: 32px;
+    row-gap: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+
+/*logo replaces the title text */
+.nav-logo {
+    grid-area: logo;
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+.nav-top .tab-bar {
+    grid-area: tabs;
 }
 
 .nav-account {
+    grid-area: account;
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 0.95rem;
+}
+
+.nav-user,
+.nav-logout {
+    white-space: nowrap; 
 }
 
 .nav-logout {
@@ -68,4 +58,66 @@
 
 .nav-logout:hover {
     background: var(--accent);
+}
+
+/* row 2 is now a compact strip: name | status | last update */
+.nav-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    padding-bottom: 10px;
+    font-size: 0.9rem;
+    color: rgba(var(--fg-rgb), 0.75);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+}
+
+/*thin divider between items instead of spreading them across the row */
+.nav-item + .nav-item {
+    border-left: 1px solid rgba(var(--fg-rgb), 0.2);
+}
+
+.nav-item:first-child {
+    padding-left: 0;
+}
+
+.nav-device {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.nav-item img {
+    width: 16px;
+    height: 16px;
+}
+.status-online{
+    color: var(--ok);
+}
+
+.status-offline{
+    color: red;
+}
+
+/* narrow screens. Logo + account on top, tabs on their own row below */
+@media (max-width: 760px) {
+    .nav-top {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "logo account"
+            "tabs tabs";
+        justify-content: space-between;
+    }
+    .nav-logo { height: 32px; }
+    .nav-account { gap: 8px; font-size: 0.85rem; }
+
+    /* Items wrap on small screens, so swap the dividers for spacing */
+    .nav-info { gap: 4px 16px; }
+    .nav-item { padding: 0; }
+    .nav-item + .nav-item { border-left: none; }
 }

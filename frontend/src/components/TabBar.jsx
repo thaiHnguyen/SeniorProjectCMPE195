@@ -17,7 +17,7 @@ function TabBar({activeTab, onTabChange}) {
                 className={`tab-btn ${activeTab === "dashboard" ? "active" : ""}`}
                 onClick={() => onTabChange("dashboard")}
             >
-                DashBoard
+                Dashboard
             </button>
 
             {/* SettingsTab */}

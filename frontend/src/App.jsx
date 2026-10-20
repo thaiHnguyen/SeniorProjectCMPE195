@@ -10,7 +10,6 @@ import {
 import "./styles/App.css";
 
 import Navbar from "./components/Navbar.jsx";
-import TabBar from "./components/TabBar.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Settings from "./pages/Settings.jsx";
 import Appearance from "./pages/Appearance.jsx";
@@ -131,10 +130,11 @@ function AuthedApp({ user, onLogout }) {
                 <Navbar 
                     deviceName="Loading..." 
                     status="offline" 
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
                     userName={user.name}
                     onLogout={onLogout}
                 />
-                <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
                 {activeTab === "appearance" ? appearancePage : (
                 <main className="dashboard">
                     {activeTab === "dashboard" ? (
@@ -154,10 +154,11 @@ function AuthedApp({ user, onLogout }) {
                 <Navbar 
                     deviceName="System Error" 
                     status="offline"
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
                     userName={user.name}
                     onLogout={onLogout}
                 />
-                <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
                 {activeTab === "appearance" ? appearancePage : (
                 <main className="dashboard">
                     {activeTab === "dashboard" ? (
@@ -173,17 +174,16 @@ function AuthedApp({ user, onLogout }) {
     // Main Render
     return (
         <>
-            {/* Navbar - always visible */}
+            {/* Navbar - always visible. CHANGED: also holds the tabs (logo | tabs | account) */}
             <Navbar
                 deviceName={device?.name || "Smart Hydroponic System"}
                 status={device?.status || "offline"}
                 lastUpdated={device?.lastUpdated}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
                 userName={user.name}
                 onLogout={onLogout}
             />
-            
-            {/* Tab Bar - always visible, switches between pages */}
-            <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
             {/*Page Content - conditionally rendered based on active tab*/}
             {activeTab === "dashboard" ? (
                 <Dashboard

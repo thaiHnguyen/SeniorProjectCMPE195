@@ -1,50 +1,71 @@
 /*
- * Uses the same color palette as the rest of the app:
- *  - var(--accent) for the active tab accent
- *  - faint var(--fg-rgb) backgrounds for glassmorphism consistency
- *  - colors come from styles/theme.css (dark + light)
+ * Tabs now sit inside the Navbar, next to the logo.
+ * CHANGED: underline tabs like the reference design:
+ *  - inactive: muted text, no background
+ *  - hover: normal text color
+ *  - active: accent text + accent underline
+ * Colors come from styles/theme.css (dark + light)
 */
 
 .tab-bar {
     display: flex;
-    gap: 2px;
-    padding: 12px;
-    border-bottom: 1px solid rgba(var(--fg-rgb), 0.08);
+    align-items: center;
+    gap: 8px;
 }
 
 .tab-btn{
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 20px;
+    padding: 12px 14px;
     border: none;
-    background: transparent; 
-    color: var(--accent-muted);
-    font-size: 0.95rem;                     /*Adjust to downloaded font alter*/
+    background: transparent;
+    color: rgba(var(--fg-rgb), 0.5);
+    font-size: 0.95rem;                  
     font-weight: 500;
     cursor: pointer;
-    border-radius: 8px 8px 0 0;
-    transition: all 0.2s ease;
-    position: relative; 
+    border-radius: 0;
+    transition: color 0.2s ease;
+    position: relative;
 }
 
 .tab-btn:hover {
     color: var(--text);
-    background: rgba(var(--accent-rgb), 0.08);;
 }
 
 .tab-btn.active {
     color: var(--accent);
-    background: rgba(var(--accent-rgb), 0.08);
 }
 
+/* Underline only on the active tab */
 .tab-btn::after {
     content: '';
     position: absolute;
-    bottom: -1px;
+    bottom: -5px;
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--accent);
+    background: transparent;
     border-radius: 2px 2px 0 0;
+    transition: background 0.2s ease;
+}
+
+.tab-btn.active::after {
+    background: var(--accent);
+}
+
+/* index.css gives every focused button a ring; skip it on mouse clicks,
+   keep it for keyboard users (focus-visible below) */
+.tab-btn:focus {
+    outline: none;
+}
+
+.tab-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+@media (max-width: 760px) {
+    .tab-btn { padding: 10px 10px; }
 }

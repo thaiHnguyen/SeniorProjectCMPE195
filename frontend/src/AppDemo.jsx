@@ -8,7 +8,6 @@ import { useState } from "react";
 import "./styles/App.css";
 
 import Navbar from "./components/Navbar.jsx";
-import TabBar from "./components/TabBar.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProfileCard from "./components/ProfileCard.jsx";
 import ProfileModal from "./components/ProfileModal.jsx";
@@ -196,8 +195,15 @@ function AppDemo() {
     // Render
     return (
         <>
-            <Navbar deviceName="Raspberry Pi 5" status="online" />
-            <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+            {/*tabs are part of the Navbar now; demo user + no-op logout to preview the account area */}
+            <Navbar
+                deviceName="Raspberry Pi 5"
+                status="online"
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                userName="Demo User"
+                onLogout={() => {}}
+            />
 
             {activeTab === "dashboard" ? (
                 // Dashboard Tab — uses the same Dashboard page component

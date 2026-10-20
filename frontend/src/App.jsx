@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { getAlerts } from "./services/api.js";
+import {
+    getAlerts,
+    getToken,
+    fetchCurrentUser,
+    logoutUser,
+    AUTH_EXPIRED_EVENT,
+} from "./services/api.js";
 
 import "./styles/App.css";
 
@@ -13,7 +19,65 @@ import LandingPage from "./pages/LandingPage.jsx";
 
 import useDashboardData from "./hooks/useDashboardData.js";
 
+/**
+ * NEW (login): App is now the sign-in gate.
+ * - Shows LandingPage until someone signs in.
+ * - On refresh, a saved token is checked with GET /api/auth/me, so a
+ *   remembered user goes straight back to the dashboard.
+ * - Goes back to LandingPage on logout, or when the backend rejects the token
+ *   (api.js fires AUTH_EXPIRED_EVENT, e.g. after the 6-hour session ends).
+ * The dashboard itself (data polling, settings, alerts) lives in AuthedApp
+ * below, so nothing is fetched before login and each user starts fresh.
+ */
 function App() {
+    const [user, setUser] = useState(null);
+    // Only "checking" when there is a saved token to verify; avoids flashing
+    // the landing page for a remembered user
+    const [checking, setChecking] = useState(() => Boolean(getToken()));
+
+    // Restore a saved login once, on first load
+    useEffect(() => {
+        if (!getToken()) return;
+        fetchCurrentUser()
+            .then(setUser)
+            .catch(() => setUser(null))    // invalid/expired: api.js already cleared it
+            .finally(() => setChecking(false));
+    }, []);
+
+    // Backend said the token is no longer valid -> back to the landing page
+    useEffect(() => {
+        const onExpired = () => setUser(null);
+        window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+        return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+        } catch (e) {
+            console.error("Logout request failed:", e);   // token is cleared anyway
+        }
+        setUser(null);
+    };
+
+    if (checking) {
+        return <p className="dashboard">Loading...</p>;
+    }
+
+    // Show Landing Page before entering Dashboard
+    if (!user) {
+        return <LandingPage onLogin={setUser} />;
+    }
+
+    // key: switching accounts remounts the dashboard with fresh state
+    return <AuthedApp key={user.id} user={user} onLogout={handleLogout} />;
+}
+
+/**
+ * The dashboard for a signed-in user.
+ * CHANGED: this was the body of App; it now only mounts after login.
+ */
+function AuthedApp({ user, onLogout }) {
     const { device, current, thresholds, charts, loading, error } = useDashboardData();
     // "dashboard" = show sensor cards and charts
     // "settings"  = show threshold profile management
@@ -31,8 +95,6 @@ function App() {
         </main>
     );
 
-    // Controls Landing Page -> Dashboard
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     // Poll alongside existing sensor polling
     useEffect(() => {
         let cancelled = false;
@@ -62,15 +124,6 @@ function App() {
         });
     };
     
-    // Show Landing Page before entering Dashboard
-    if (!isLoggedIn) {
-        return (
-            <LandingPage
-                onLogin={() => setIsLoggedIn(true)}
-            />
-        );
-    }
-
     // Loading State
     if (loading) {
         return (
@@ -78,6 +131,8 @@ function App() {
                 <Navbar 
                     deviceName="Loading..." 
                     status="offline" 
+                    userName={user.name}
+                    onLogout={onLogout}
                 />
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
                 {activeTab === "appearance" ? appearancePage : (
@@ -99,6 +154,8 @@ function App() {
                 <Navbar 
                     deviceName="System Error" 
                     status="offline"
+                    userName={user.name}
+                    onLogout={onLogout}
                 />
                 <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
                 {activeTab === "appearance" ? appearancePage : (
@@ -121,6 +178,8 @@ function App() {
                 deviceName={device?.name || "Smart Hydroponic System"}
                 status={device?.status || "offline"}
                 lastUpdated={device?.lastUpdated}
+                userName={user.name}
+                onLogout={onLogout}
             />
             
             {/* Tab Bar - always visible, switches between pages */}

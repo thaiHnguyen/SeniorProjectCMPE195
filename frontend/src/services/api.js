@@ -9,7 +9,12 @@
  *  - activateConfiguration()
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://expedition-23.ngrok.app";
+// Backend URL comes from frontend/.env (see frontend/.env.example).
+// Falls back to a local backend instead of a hardcoded public tunnel URL.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+if (!import.meta.env.VITE_API_BASE_URL) {
+    console.warn("[api] VITE_API_BASE_URL not set: using http://localhost:8000. Copy frontend/.env.example to frontend/.env.");
+}
 
 async function fetchJSON(endpoint, options = {}) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

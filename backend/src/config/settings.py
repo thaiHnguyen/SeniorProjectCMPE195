@@ -3,9 +3,15 @@ Application Settings
 Loads configuration from environment variables
 """
 import socket
+from pathlib import Path
 
 from pydantic_settings import BaseSettings
 from typing import List
+
+# Repo root = backend/src/config/settings.py -> up 3 levels.
+# Loading .env by absolute path fixes the bug where settings silently fell back
+# to defaults when the backend was started from a different working directory.
+ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 
 
 class Settings(BaseSettings):
@@ -43,7 +49,8 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.allowed_origins.split(",")]
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_FILE
+        env_file_encoding = "utf-8"
         case_sensitive = False
 
 

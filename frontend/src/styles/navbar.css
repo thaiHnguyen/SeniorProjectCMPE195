@@ -8,7 +8,7 @@
     position: relative;
 }
 
-/* CHANGED (layout): one row with three areas: logo | tabs | account.
+/* one row with three areas: logo | tabs | account.
    Grid keeps the tabs right after the logo and pushes the account to the far right. */
 .nav-top {
     display: grid;
@@ -21,10 +21,23 @@
     border-bottom: 1px solid rgba(var(--fg-rgb), 0.08);
 }
 
-/*logo replaces the title text */
-.nav-logo {
+/* logo replaces the title text. It's a link that reloads the page. Tune --logo-size (below) to taste. */
+.nav-logo-link {
+    --logo-size: 120px;
     grid-area: logo;
-    height: 40px;
+    display: block;
+    margin: calc(var(--logo-size) * -0.25) 0;  
+    line-height: 0;
+    border-radius: 8px;
+}
+
+.nav-logo-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.nav-logo {
+    height: var(--logo-size);
     width: auto;
     display: block;
 }
@@ -43,7 +56,7 @@
 
 .nav-user,
 .nav-logout {
-    white-space: nowrap; 
+    white-space: nowrap;     /* keep "Hi, Name" and "Log out" on one line */
 }
 
 .nav-logout {
@@ -60,7 +73,7 @@
     background: var(--accent);
 }
 
-/* row 2 is now a compact strip: name | status | last update */
+/* CHANGED: row 2 is now a compact strip: name | status | last update */
 .nav-info {
     display: flex;
     align-items: center;
@@ -78,7 +91,7 @@
     padding: 0 14px;
 }
 
-/*thin divider between items instead of spreading them across the row */
+/* NEW: thin divider between items instead of spreading them across the row */
 .nav-item + .nav-item {
     border-left: 1px solid rgba(var(--fg-rgb), 0.2);
 }
@@ -113,9 +126,8 @@
             "tabs tabs";
         justify-content: space-between;
     }
-    .nav-logo { height: 32px; }
+    .nav-logo-link { --logo-size: 64px; }
     .nav-account { gap: 8px; font-size: 0.85rem; }
-
     /* Items wrap on small screens, so swap the dividers for spacing */
     .nav-info { gap: 4px 16px; }
     .nav-item { padding: 0; }
